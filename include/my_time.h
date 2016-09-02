@@ -25,7 +25,17 @@ void DELAY_TimeOut_mS(uint16_t mS);
 void DELAY_TimeOut_uS(uint16_t mS);
 uint8_t DELAY_Check(void);
 
+#define TIMER_FREQUENCY_HZ (1000u)
+typedef uint32_t timer_ticks_t;
 
+
+#if defined(USE_HAL_DRIVER)
+void HAL_IncTick(void);
+#endif
+
+extern volatile timer_ticks_t timer_delayCount;
+extern void timer_start (void);
+extern void timer_sleep (timer_ticks_t ticks);
 
 #define TIMEZONE_MSK			(+3)
 
@@ -70,8 +80,15 @@ typedef struct {
 
 extern volatile time_t uxTime;
 
+extern tDate sysDate;
+extern tTime sysTime;
+
+
 extern volatile uint32_t myTick;
-extern volatile uint32_t usCountDown;
+extern volatile uint32_t usDelFlag;
+
+extern uint32_t toReadCount;
+extern uint32_t toReadTout;
 
 // *********** Инициализация структуры ВРЕМЯ (сейчас - системное ) ************
 void timeInit( void );
@@ -85,6 +102,9 @@ void timersProcess( void );
 void timeToStr( time_t ut, uint8_t *str );
 
 void timersHandler( void );
+
+void delayUsInit( void );
 void myDelay( uint32_t del );
+void usDelay( uint32_t usDel );
 
 #endif /* UNIX_TIME_H_ */

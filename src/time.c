@@ -11,18 +11,27 @@
  *  Created on: 08 апр. 2016 г.
  */
 
+#include <main.h>
 #include "stm32f10x.h"
 #include "my_time.h"
 #include "stm32f10x_it.h"
-//#include "main.h"
-//#include "init.h"
+//#include "onewire.h"
 //#include "logger.h"
 //#include "thermo.h"
 
+volatile timer_ticks_t timer_delayCount;
 volatile time_t uxTime;
 volatile uint32_t myTick;
-volatile uint32_t usTick;
+volatile uint32_t usDelFlag;
+
+tDate sysDate;
+tTime sysTime;
+
 extern RCC_ClocksTypeDef RCC_Clocks;
+
+uint32_t toReadCount;
+uint32_t toReadTout;
+uint8_t  secondFlag = FALSE;
 
 /*
 // *********** Инициализация структуры ВРЕМЯ (сейчас - системное ) ************
@@ -87,17 +96,17 @@ int32_t		secs;
 int32_t		mon, year;
 
 	/* Calculate number of days. */
-	mon = mdate->RTC_Month - 1;
-	year = mdate->RTC_Year - _TBIAS_YEAR;
+	mon = mdate->Month - 1;
+	year = mdate->Year - _TBIAS_YEAR;
 	days  = Daysto32(year, mon) - 1;
 	days += 365 * year;
-	days += mdate->RTC_Date;
+	days += mdate->Date;
 	days -= _TBIAS_DAYS;
 
 	/* Calculate number of seconds. */
-	secs  = 3600 * mtime->RTC_Hours;
-	secs += 60 * mtime->RTC_Minutes;
-	secs += mtime->RTC_Seconds;
+	secs  = 3600 * mtime->Hours;
+	secs += 60 * mtime->Minutes;
+	secs += mtime->Seconds;
 
 	secs += (days * (time_t)86400);
 
@@ -130,120 +139,125 @@ void xUtime2Tm( tDate * mdate, tTime *mtime, time_t secsarg){
 		/* days, hour, min, sec */
 	days += secs / 86400;
 	secs = secs % 86400;
-	mtime->RTC_Hours = secs / 3600;
+	mtime->Hours = secs / 3600;
 	secs %= 3600;
-	mtime->RTC_Minutes = secs / 60;
-	mtime->RTC_Seconds = secs % 60;
+	mtime->Minutes = secs / 60;
+	mtime->Seconds = secs % 60;
 
-	mdate->RTC_WeekDay = (days + 1) % 7;
+	mdate->WeekDay = (days + 1) % 7;
 
 	/* determine year */
 	for (year = days / 365; days < (i = Daysto32(year, 0) + 365*year); ) { --year; }
 	days -= i;
-	mdate->RTC_Year = year + _TBIAS_YEAR;
+	mdate->Year = year + _TBIAS_YEAR;
 
 		/* determine month */
 	pm = MONTAB(year);
 	for (mon = 12; days < pm[--mon]; );
-	mdate->RTC_Month = mon + 1;
-	mdate->RTC_Date = days - pm[mon] + 1;
+	mdate->Month = mon + 1;
+	mdate->Date = days - pm[mon] + 1;
 }
 
-void setRtcTime( time_t xtime ){
-	tTime mtime;
-	tDate mdate;
-
-	xUtime2Tm( &mdate, &mtime, xtime);
-	RTC_SetTime( RTC_Format_BIN, &mtime );
-	RTC_SetDate( RTC_Format_BIN, &mdate );
-}
-
-time_t getRtcTime( void ){
-	tTime mtime;
-	tDate mdate;
-
-	RTC_GetTime( RTC_Format_BIN, &mtime );
-	RTC_GetDate( RTC_Format_BIN, &mdate );
-
-	return xTm2Utime( &mdate, &mtime );
-}
-
-/*
 void timersHandler( void ) {
 
-	// Таймаут для логгирования температуры
+	// Decrement to zero the counter used by the delay routine.
+  if (timer_delayCount != 0u) {
+    --timer_delayCount;
+  }
+
+/*	// Таймаут для логгирования температуры
 	if ( toLogCount > 1) {
 		toLogCount--;
 	}
+*/
 	// Таймаут для считывания температуры
 	if ( toReadCount > 1) {
 		toReadCount--;
 	}
 
-	// Таймаут для считывания датчиков двери
-	if ( ddReadCount > 1) {
-		ddReadCount--;
+	// Секундный таймер
+	if ( !(myTick % 1000) ) {
+		secondFlag = TRUE;
+		uxTime++;
+		xUtime2Tm( &sysDate, & sysTime, uxTime );
 	}
+
 
 }
 
 void timersProcess( void ) {
+/*
 	// Таймаут для логгирования температуры
 	if ( toLogCount == 1 ) {
 		toLogCount = toLogTout+1;
 		toLogWrite();
 	}
+*/
 	// Таймаут для считывания температуры
 	if ( toReadCount == 1 ) {
+		int16_t tmpTo;
 		toReadCount += toReadTout;
-		toReadTemperature();
-		toCurCharUpdate();
+		toReadTemperature( TO_IN );
+		tmpTo = r103Mesure.to[TO_OUT];
+		toReadTemperature( TO_OUT );
+		if( tmpTo < r103Mesure.to[TO_OUT] ){
+			r103Stat.toStat = TO_UP;
+		}
+		else if( tmpTo > r103Mesure.to[TO_OUT] ){
+			r103Stat.toStat = TO_DOWN;
+		}
+		else {
+				r103Stat.toStat = TO_STOP;
+		}
+		canSendMsg( TO_IN_MSG, r103Mesure.to[TO_IN] );
+		canSendMsg( TO_OUT_MSG, r103Mesure.to[TO_OUT] );
 	}
 
 	// Таймаут для считывания датчиков двери
-	if ( ddReadCount == 1) {
-		ddReadCount += ddReadTout;
-		ddReadDoor();
-		ddCurCharUpdate();
+	if ( secondFlag ) {
+		secondFlag = FALSE;
+		flowGetVolume();
+		flowSecondProcess();
 	}
 }
 
-*/
-
 // Инициализация таймера микросекундных задержек
 void delayUsInit( void ) {
-	TIM_TimeBaseInitTypeDef DELAY_TIM_TimeBaseStructure;
 	NVIC_InitTypeDef DELAY_NVIC_InitStructure;
 
 
 	RCC->APB1ENR |= RCC_APB1ENR_TIM4EN;
 
 	TIM_DeInit(DELAY_TIM);
-	DELAY_TIM->RCR &= TIM_CR1_CEN;
-	DELAY_TIM->PSC = RCC_Clocks->PCLK2_Frequency - 1;
+	DELAY_TIM->CR1 &= ~TIM_CR1_CEN;
+	// Выставляем счетчик на 0,5 мкс
+	DELAY_TIM->PSC = (RCC_Clocks.PCLK2_Frequency/2000000) - 1;
 	DELAY_TIM->ARR = 0xFFFF;
 	DELAY_TIM->CR1 &= ~TIM_CR1_CKD;
-	DELAY_TIM->CR1 &= ~TIM_CR1_DIR;
+	DELAY_TIM->CR1 &= ~TIM_CR1_DIR;		// Считаем на возрастание
 
-
+/*
 	TIM_ITConfig(DELAY_TIM, TIM_IT_Update, ENABLE);
 	DELAY_NVIC_InitStructure.NVIC_IRQChannel = DELAY_NVIC_IRQCHANNEL;
 	DELAY_NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 1;
 	DELAY_NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
 	DELAY_NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
 	NVIC_Init(&DELAY_NVIC_InitStructure);
-
+*/
 }
 
-// Задержка в микросекундах
+// Задержка в 0,5 мкс
 
 void usDelay( uint32_t usDel ){
 
-	usCountDown = usDel;
+	DELAY_TIM->ARR = usDel-1;
+	DELAY_TIM->CNT = 0;
 	DELAY_TIM->CR1 |= TIM_CR1_CEN;
-	while( usCountDown )
+
+	while( !(DELAY_TIM->SR & TIM_SR_UIF) )
 	{}
 	DELAY_TIM->CR1 &= ~TIM_CR1_CEN;
+	DELAY_TIM->SR &= ~TIM_SR_UIF;
 }
 
 // Задержка в мс
@@ -252,3 +266,4 @@ void myDelay( uint32_t del ){
 	while ( myTick < finish)
 	{}
 }
+

@@ -1,5 +1,5 @@
-src/main.o: ../src/main.c ../system/include/cmsis/stm32f10x.h \
- ../system/include/cmsis/core_cm3.h \
+src/main.o: ../src/main.c ../include/main.h ../include/flow.h \
+ ../system/include/cmsis/stm32f10x.h ../system/include/cmsis/core_cm3.h \
  ../system/include/cmsis/core_cmInstr.h \
  ../system/include/cmsis/cmsis_gcc.h \
  ../system/include/cmsis/core_cmFunc.h \
@@ -26,10 +26,12 @@ src/main.o: ../src/main.c ../system/include/cmsis/stm32f10x.h \
  ../system/include/stm32f1-stdperiph/stm32f10x_tim.h \
  ../system/include/stm32f1-stdperiph/stm32f10x_usart.h \
  ../system/include/stm32f1-stdperiph/stm32f10x_wwdg.h \
- ../system/include/stm32f1-stdperiph/misc.h \
- ../system/include/diag/Trace.h ../include/Timer.h \
- ../system/include/cmsis/cmsis_device.h \
- ../system/include/cmsis/stm32f10x.h
+ ../system/include/stm32f1-stdperiph/misc.h ../include/can.h \
+ ../include/onewire.h ../include/my_time.h
+
+../include/main.h:
+
+../include/flow.h:
 
 ../system/include/cmsis/stm32f10x.h:
 
@@ -91,10 +93,8 @@ src/main.o: ../src/main.c ../system/include/cmsis/stm32f10x.h \
 
 ../system/include/stm32f1-stdperiph/misc.h:
 
-../system/include/diag/Trace.h:
+../include/can.h:
 
-../include/Timer.h:
+../include/onewire.h:
 
-../system/include/cmsis/cmsis_device.h:
-
-../system/include/cmsis/stm32f10x.h:
+../include/my_time.h:

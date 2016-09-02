@@ -22,9 +22,11 @@
   */
 
 /* Includes ------------------------------------------------------------------*/
+#include <flow.h>
+#include <main.h>
 #include "stm32f10x_it.h"
-//#include "main.h"
 #include "my_time.h"
+#include "can.h"
 
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
@@ -125,37 +127,19 @@ void PendSV_Handler(void)
 {
 }
 
-void
-timer_tick (void)
-{
-  // Decrement to zero the counter used by the delay routine.
-  if (timer_delayCount != 0u)
-    {
-      --timer_delayCount;
-    }
-}
-
 // ----- SysTick_Handler() ----------------------------------------------------
 
 void
-SysTick_Handler (void)
-{
+SysTick_Handler (void) {
 #if defined(USE_HAL_DRIVER)
   HAL_IncTick();
 #endif
-  timer_tick ();
+  myTick++;
+  timersHandler();
 }
 
-/**
-  * @brief  This function handles SysTick Handler.
-  * @param  None
-  * @retval None
-  */
-void SysTick_Handler(void)
-{
-  /* Update the LocalTime by adding SYSTEMTICK_PERIOD_MS each SysTick interrupt */
-  Time_Update();
-  myTick++;
+// Прерывание датчика Холла - измерителя потока
+void EXTI9_5_IRQHandler(void){
 }
 
 /**
@@ -163,26 +147,20 @@ void SysTick_Handler(void)
   * @param  None
   * @retval None
   */
-void EXTI3_IRQHandler(void)
-{
-
+void EXTI3_IRQHandler(void){
 }
-#if 0
+
 /**
   * @brief  This function handles External line 10 interrupt request.
   * @param  None
   * @retval None
   */
-void EXTI15_10_IRQHandler(void)
-{
-  if(EXTI_GetITStatus(ETH_LINK_EXTI_LINE) != RESET)
-  {
-    Eth_Link_ITHandler(DP83848_PHY_ADDRESS);
-    /* Clear interrupt pending bit */
-    EXTI_ClearITPendingBit(ETH_LINK_EXTI_LINE);
-  }
+void EXTI15_10_IRQHandler(void){
+	if (EXTI_GetITStatus(FLOW_SENS_EXTI_LINE)) {
+		flowCount++;
+		EXTI_ClearITPendingBit(FLOW_SENS_EXTI_LINE);
+	}
 }
-#endif
 /******************************************************************************/
 /*                 STM32F2xx Peripherals Interrupt Handlers                   */
 /*  Add here the Interrupt Handler for the used peripheral(s) (PPP), for the  */
@@ -190,8 +168,8 @@ void EXTI15_10_IRQHandler(void)
 /*  file (startup_stm32f2xx.s).                                               */
 /******************************************************************************/
 void TIM4_IRQHandler( void ){
-	if(usCountDown){
-		usCountDown--;
+	if(usDelFlag){
+		usDelFlag = FALSE;
 	}
 }
 

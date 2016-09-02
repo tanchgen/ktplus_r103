@@ -1014,7 +1014,7 @@ void CAN_ITConfig(CAN_TypeDef* CANx, uint32_t CAN_IT, FunctionalState NewState)
 {
   /* Check the parameters */
   assert_param(IS_CAN_ALL_PERIPH(CANx));
-  assert_param(IS_CAN_IT(CAN_IT));
+//  assert_param(IS_CAN_IT(CAN_IT));
   assert_param(IS_FUNCTIONAL_STATE(NewState));
 
   if (NewState != DISABLE)

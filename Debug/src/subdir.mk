@@ -5,8 +5,10 @@
 # Add inputs and outputs from these tool invocations to the build variables 
 C_SRCS += \
 ../src/BlinkLed.c \
-../src/Timer.c \
 ../src/_write.c \
+../src/buffer.c \
+../src/can.c \
+../src/flow.c \
 ../src/main.c \
 ../src/onewire.c \
 ../src/stm32f10x_it.c \
@@ -14,8 +16,10 @@ C_SRCS += \
 
 OBJS += \
 ./src/BlinkLed.o \
-./src/Timer.o \
 ./src/_write.o \
+./src/buffer.o \
+./src/can.o \
+./src/flow.o \
 ./src/main.o \
 ./src/onewire.o \
 ./src/stm32f10x_it.o \
@@ -23,8 +27,10 @@ OBJS += \
 
 C_DEPS += \
 ./src/BlinkLed.d \
-./src/Timer.d \
 ./src/_write.d \
+./src/buffer.d \
+./src/can.d \
+./src/flow.d \
 ./src/main.d \
 ./src/onewire.d \
 ./src/stm32f10x_it.d \

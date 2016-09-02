@@ -8,12 +8,13 @@
 #ifndef ONEWIRE_H_
 #define ONEWIRE_H_
 
+#include "stm32f10x.h"
 
 #define TO_IN_PIN					GPIO_Pin_11
 #define TO_IN_PIN_NUM			11
 #define TO_IN_PORT				GPIOA
 
-#define TO_IN_CLK_ENABLE		RCC->APB1ENR |= RCC_APB2ENR_IOPAEN
+#define TO_IN_CLK_ENABLE		RCC->APB2ENR |= RCC_APB2ENR_IOPAEN
 //#else
 //#error "Need define other function for enable clk for this GPIO port"
 //#endif
@@ -26,6 +27,22 @@
 //#else
 //#error "Need define other function for enable clk for this GPIO port"
 //#endif
+
+#define TEMPER_MAX				0x7D0				// Максимальная температура
+#define TEMPER_MIN				0xC90				// Минимальная температура
+
+#define MESUR_ACC					10	   	// Кол-во разрядов преобразования (10 бит - 0.25C, 12бит - 0.0625)
+#define MESUR_TIME_9			95			// Время преобразования для 9 бит ( 95мс )
+#define MESUR_TIME_10			190			// Время преобразования для 10 бит ( 190мс )
+#define MESUR_TIME_11			380			// Время преобразования для 11 бит ( 380мс )
+#define MESUR_TIME_12			760			// Время преобразования для 12 бит ( 760мс )
+
+#define TO_READ_TOUT			10000;	// Итервал измерения температуры ( мс )
+
+enum {
+	FALSE = 0,
+	TRUE = 1,
+};
 
 typedef enum {
 	TO_IN,
@@ -51,20 +68,16 @@ typedef struct {
 	int16_t tMax;						//  Допустимый минимум температуры
 	eOwStatus devStatus;
 	uint8_t newErr;					//	Признак новой ошибки
-	int16_t	temper;						// Действующее значение температуры
+	uint8_t coldHot;					// Флаг контура: "Холодный-Горячий"
 } tOwToDev;
 
-#define MAX_TO_DEV_NUM	4
+#define MAX_TO_DEV_NUM	2
 
-#define TO_DEV_NUM			3				// Количество термометров
+#define TO_DEV_NUM			2				// Количество термометров
 #if (MAX_TO_DEV_NUM < TO_DEV_NUM)
 #error "Число датчиков температуры превышает максимальное для данной EEPROM (128кБ) для Логов"
 #endif
 
-#define DD_DEV_NUM			2				// Количество Датчиков Дверей (DD)
-#define OW_DEV_NUM			TO_DEV_NUM
-
-#endif
 
 // Команды 1-Wire
 #define SEARCH_ROM			0xF0
@@ -90,12 +103,12 @@ typedef struct {
 extern uint8_t owDevNum;
 extern eOwStatus owStatus;
 extern tOwToDev owToDev[]; 			// Массив структур устройств 1-Wire;
-extern tDdDev ddDev[]; 			// Массив структур Датчиков Двери 1-Wire;
 
-extern uint32_t tmpModerOut, tmpModerAf;			 // Значения регистра MODER для UART и для подтяжки UART_RX к Vdd
-
-uint8_t OW_Init();
-uint8_t OW_Send(uint8_t sendReset, uint8_t *command, uint8_t cLen, uint8_t *data, uint8_t dLen, uint8_t readStart);
-uint8_t OW_Scan(uint8_t *buf, uint8_t num);
+//uint8_t OW_Init();
+//uint8_t OW_Send(uint8_t sendReset, uint8_t *command, uint8_t cLen, uint8_t *data, uint8_t dLen, uint8_t readStart);
+//uint8_t OW_Scan(uint8_t *buf, uint8_t num);
+void toInit( void );
+void toReadTemperature( toSensNum toNum );
+void mesureDelay( void );
 
 #endif /* ONEWIRE_H_ */
