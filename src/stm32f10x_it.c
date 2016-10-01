@@ -173,11 +173,14 @@ void TIM4_IRQHandler( void ){
 	}
 }
 
-void CAN1_RX0_IRQHandler(void)
+void USB_LP_CAN1_RX0_IRQHandler(void)
 {
 	canRx0IrqHandler();
 }
 
+void USB_HP_CAN1_TX_IRQHandler( void ){
+	canTxIrqHandler();
+}
 void CAN1_TX_IRQHandler( void ) {
 	canTxIrqHandler();
 }
