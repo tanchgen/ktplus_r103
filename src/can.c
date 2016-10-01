@@ -26,11 +26,11 @@ void canInit(void)
 	canBspInit();
 
 	CAN_DeInit(CAN_CAN);
-	CAN_InitStruct.CAN_Prescaler = 6;
+	CAN_InitStruct.CAN_Prescaler = 18;
 	CAN_InitStruct.CAN_Mode = CAN_Mode_Normal;
 	CAN_InitStruct.CAN_SJW = CAN_SJW_1tq;
-	CAN_InitStruct.CAN_BS1 = CAN_BS1_6tq;
-	CAN_InitStruct.CAN_BS2 = CAN_BS2_8tq;
+	CAN_InitStruct.CAN_BS1 = CAN_BS1_4tq;
+	CAN_InitStruct.CAN_BS2 = CAN_BS2_3tq;
 	CAN_InitStruct.CAN_TTCM = DISABLE;
 	CAN_InitStruct.CAN_ABOM = DISABLE;
 	CAN_InitStruct.CAN_AWUM = DISABLE;
@@ -153,6 +153,26 @@ void canFilterInit( void ){
 
 void canFilterUpdate( tFilter * filter, uint8_t filterNum ) {
 	CAN_FilterInitTypeDef CAN_FilterInitStruct;
+
+	filter->idList <<= 0x3;
+	CAN_FilterInitStruct.CAN_FilterIdHigh = (filter->idList >> 16) & 0xFFFF;
+	CAN_FilterInitStruct.CAN_FilterIdLow = (filter->idList & 0xFFFF) | (filter->ideList << 2) | (filter->rtrList << 1);
+	filter->idMask <<= 0x3;
+	CAN_FilterInitStruct.CAN_FilterMaskIdHigh = (filter->idMask >> 16) & 0xFFFF;
+	CAN_FilterInitStruct.CAN_FilterMaskIdLow = (filter->idMask & 0xFFFF) | (filter->ideMask << 2) | (filter->rtrMask << 1);
+
+	CAN_FilterInitStruct.CAN_FilterFIFOAssignment = CAN_Filter_FIFO0;
+	CAN_FilterInitStruct.CAN_FilterNumber = filterNum;
+	CAN_FilterInitStruct.CAN_FilterMode = CAN_FilterMode_IdMask;
+	CAN_FilterInitStruct.CAN_FilterScale = CAN_FilterScale_32bit;
+	CAN_FilterInitStruct.CAN_FilterActivation = ENABLE;
+	CAN_FilterInit(&CAN_FilterInitStruct);
+
+}
+
+/*
+void canFilterUpdate( tFilter * filter, uint8_t filterNum ) {
+	CAN_FilterInitTypeDef CAN_FilterInitStruct;
 	uint16_t stdId;
 	uint32_t extId;
 
@@ -173,7 +193,7 @@ void canFilterUpdate( tFilter * filter, uint8_t filterNum ) {
 	CAN_FilterInit(&CAN_FilterInitStruct);
 
 }
-
+*/
 
 void canRx0IrqHandler(void) {
 	CanRxMsg RxMessage;

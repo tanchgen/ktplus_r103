@@ -39,16 +39,16 @@ int main(int argc, char* argv[]) {
   r103Mesure.coldHot = HOT;
 
   canInit();
-  delayUsInit();
+//  delayUsInit();
   toInit();
-  flowSensInit();
+//  flowSensInit();
 
   // Infinite loop
   while (1)
     {
   		timersProcess();
   		canProcess();
-  		thermoProcess();
+//  		thermoProcess();
     }
   // Infinite loop, never return.
 }
