@@ -73,7 +73,7 @@ void toInit( void ){
 
 	toPinSetInput( TO_IN );
 	toPinSetInput( TO_OUT );
-	toReadCount = toReadTout = TO_READ_TOUT;
+	toReadCount = TO_READ_TOUT;
 
 }
 

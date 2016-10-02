@@ -88,7 +88,6 @@ extern volatile uint32_t myTick;
 extern volatile uint32_t usDelFlag;
 
 extern uint32_t toReadCount;
-extern uint32_t toReadTout;
 
 // *********** Инициализация структуры ВРЕМЯ (сейчас - системное ) ************
 void timeInit( void );

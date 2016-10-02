@@ -30,7 +30,6 @@ tTime sysTime;
 extern RCC_ClocksTypeDef RCC_Clocks;
 
 uint32_t toReadCount;
-uint32_t toReadTout;
 uint8_t  secondFlag = FALSE;
 
 /*
@@ -196,7 +195,7 @@ void timersProcess( void ) {
 	// Таймаут для считывания температуры
 	if ( toReadCount == 1 ) {
 		int16_t tmpTo;
-		toReadCount += toReadTout;
+		toReadCount += TO_READ_TOUT;
 		toReadTemperature( TO_IN );
 		tmpTo = r103Mesure.to[TO_OUT];
 		toReadTemperature( TO_OUT );
