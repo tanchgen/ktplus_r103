@@ -5,7 +5,7 @@
  *      Author: Gennady Tanchin <g.tanchin@yandex.ru>
  */
 
-#include <main.h>
+#include "main.h"
 #include "stm32f10x_conf.h"
 #include "my_time.h"
 #include "buffer.h"
@@ -303,7 +303,7 @@ void canSendMsg( eMessId msgId, uint32_t data ) {
 	canId.coldHot = r103Mesure.coldHot;
 	canId.s207 = nS207_DEV;
 
-	if ( (msgId == TO_IN_MSG) || (msgId == TO_OUT_MSG) ) {
+	if ( (msgId == TO_IN_MSG) || (msgId == TO_OUT_MSG) || (msgId == TO_DELTA_HOUR) ) {
 		// Для температуры - данные 16-и битные со знаком
 		*((int16_t *)canTxMsg.Data) = *((int16_t *)&data);
 		canTxMsg.DLC = 2;

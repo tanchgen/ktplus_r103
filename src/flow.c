@@ -9,10 +9,11 @@
 #include "my_time.h"
 
 volatile uint32_t flowCount;
-// Коэффициент пересчета имп. в поток (см3)
-#define KFLOW				((float)0.987654321)
+// Коэффициент пересчета имп. в поток (см3 на импульс)
+#define KFLOW								(33)
+// Коэффициент коррекции определенный опытным путем
+#define KFLOW_CORRECT				((float)0.987654321)
 uint16_t ktf[21];					// Таблица поправочных коэффициентов потока на температуру
-
 
 void flowSensInit(void)
 {
@@ -48,12 +49,12 @@ void flowSensInit(void)
 
 void flowGetVolume(void) {
 
-	r103Mesure.flowNow = flowCount;
+	r103Mesure.flowNow = flowCount * KFLOW;
 	if(r103Mesure.flowNow < r103Mesure.flowPrev){
 		// Если счетчик flowCount перешел через 0
 		r103Mesure.flowNow += (0xFFFFFFFF) - r103Mesure.flowPrev;
 	}
-	r103Mesure.flowSec = (uint32_t)((float)(r103Mesure.flowNow - r103Mesure.flowPrev) * KFLOW);
+	r103Mesure.flowSec = (uint32_t)((float)(r103Mesure.flowNow - r103Mesure.flowPrev) * KFLOW_CORRECT);
 	r103Mesure.flowPrev = r103Mesure.flowNow;
 
 }
@@ -61,14 +62,33 @@ void flowGetVolume(void) {
 void flowSecondProcess( void ) {
 #define C_H2O				4.187			// Удельная теплоемкость воды
 	double sigmh;
+	static uint32_t fMin;
+	static uint32_t fHour;
+	static uint32_t qMin;
+	static uint16_t dToHour;
 
 	//	Вычисление тепловой энергии за секунду
+	dToHour += (r103Mesure.to[r103Mesure.coldHot ^ 0x1] - r103Mesure.to[r103Mesure.coldHot]);
 	sigmh = (r103Mesure.to[r103Mesure.coldHot ^ 0x1] - r103Mesure.to[r103Mesure.coldHot]);
 	sigmh *= C_H2O;
 	sigmh *= 0.0625;
 	r103Mesure.qSec = sigmh * r103Mesure.flowSec;
-	canSendMsg( FLOW, r103Mesure.flowSec );
-	canSendMsg( POWER_SEC, r103Mesure.qSec );
+	fMin += r103Mesure.flowSec;
+	qMin += r103Mesure.qSec;
+	if( !(sysTime.Seconds ) ){
+		canSendMsg( FLOW, fMin / 60 );
+		canSendMsg( POWER_SEC, qMin / 60 );
+		fHour += fMin;
+		if( !(sysTime.Minutes) ){
+			canSendMsg( FLOW_HOUR, fHour );
+			fHour = 0;
+			canSendMsg(	TO_DELTA_HOUR, dToHour );
+			dToHour = 0;
+		}
+		fMin = 0;
+		qMin = 0;
+	}
+
 	r103Mesure.qDay += 	r103Mesure.qSec;
 	if( !(sysTime.Seconds || sysTime.Minutes || sysTime.Hours) ){
 		r103Mesure.qWeek += r103Mesure.qDay;

@@ -10,8 +10,8 @@
 
 #include "stm32f10x.h"
 
-#define TO_IN_PIN					GPIO_Pin_11
-#define TO_IN_PIN_NUM			11
+#define TO_IN_PIN					GPIO_Pin_12
+#define TO_IN_PIN_NUM			12
 #define TO_IN_PORT				GPIOA
 
 #define TO_IN_CLK_ENABLE		RCC->APB2ENR |= RCC_APB2ENR_IOPAEN
@@ -19,8 +19,8 @@
 //#error "Need define other function for enable clk for this GPIO port"
 //#endif
 
-#define TO_OUT_PIN				GPIO_Pin_12
-#define TO_OUT_PIN_NUM		12
+#define TO_OUT_PIN				GPIO_Pin_11
+#define TO_OUT_PIN_NUM		11
 #define TO_OUT_PORT				GPIOA
 
 #define TO_OUT_CLK_ENABLE		RCC->APB1ENR |= RCC_APB2ENR_IOPAEN

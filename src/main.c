@@ -5,7 +5,7 @@
 
 // ----------------------------------------------------------------------------
 
-#include <main.h>
+#include "main.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -39,7 +39,7 @@ int main(int argc, char* argv[]) {
   r103Mesure.coldHot = HOT;
 
   canInit();
-//  delayUsInit();
+  delayUsInit();
   toInit();
 //  flowSensInit();
 
@@ -50,7 +50,6 @@ int main(int argc, char* argv[]) {
   		canProcess();
 //  		thermoProcess();
     }
-  // Infinite loop, never return.
 }
 
 void thermoProcess( void ){

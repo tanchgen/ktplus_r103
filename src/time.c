@@ -196,8 +196,10 @@ void timersProcess( void ) {
 	if ( toReadCount == 1 ) {
 		int16_t tmpTo;
 		toReadCount += TO_READ_TOUT;
-		toReadTemperature( TO_IN );
+		// Датчика входящей температуры нет, поэтому имитируем показания
+//		toReadTemperature( TO_IN );
 		tmpTo = r103Mesure.to[TO_OUT];
+		r103Mesure.to[TO_IN] = tmpTo + 320;
 		toReadTemperature( TO_OUT );
 		if( tmpTo < r103Mesure.to[TO_OUT] ){
 			r103Stat.toStat = TO_UP;
@@ -208,13 +210,12 @@ void timersProcess( void ) {
 		else {
 				r103Stat.toStat = TO_STOP;
 		}
-		canSendMsg( TO_IN_MSG, r103Mesure.to[TO_IN] );
-		canSendMsg( TO_OUT_MSG, r103Mesure.to[TO_OUT] );
 	}
 
 	// Таймаут для считывания датчиков двери
 	if ( secondFlag ) {
 		secondFlag = FALSE;
+		flowCount += 8;
 		flowGetVolume();
 		flowSecondProcess();
 	}

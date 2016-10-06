@@ -74,7 +74,9 @@ void toInit( void ){
 	toPinSetInput( TO_IN );
 	toPinSetInput( TO_OUT );
 	toReadCount = TO_READ_TOUT;
-
+	// Сразу измерим температуру
+	toReadTemperature( TO_IN );
+	toReadTemperature( TO_OUT );
 }
 
 static void toPinSetInput( toSensNum toNum ) {
@@ -220,6 +222,6 @@ void toReadTemperature( toSensNum toNum ) {
 	if( readBuf & 0xf800){
 		readBuf |= 0xf800;
 	}
-	r103Mesure.to[toNum] = readBuf;
+	r103Mesure.to[toNum] = readBuf & ~(0x0003);
 }
 
