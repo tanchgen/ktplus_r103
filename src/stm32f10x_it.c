@@ -140,6 +140,10 @@ SysTick_Handler (void) {
 
 // Прерывание датчика Холла - измерителя потока
 void EXTI9_5_IRQHandler(void){
+	if (EXTI_GetITStatus(FLOW_SENS_EXTI_LINE)) {
+		flowCount++;
+		EXTI_ClearITPendingBit(FLOW_SENS_EXTI_LINE);
+	}
 }
 
 /**
@@ -156,10 +160,6 @@ void EXTI3_IRQHandler(void){
   * @retval None
   */
 void EXTI15_10_IRQHandler(void){
-	if (EXTI_GetITStatus(FLOW_SENS_EXTI_LINE)) {
-		flowCount++;
-		EXTI_ClearITPendingBit(FLOW_SENS_EXTI_LINE);
-	}
 }
 /******************************************************************************/
 /*                 STM32F2xx Peripherals Interrupt Handlers                   */

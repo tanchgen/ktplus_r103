@@ -196,11 +196,17 @@ void timersProcess( void ) {
 	if ( toReadCount == 1 ) {
 		int16_t tmpTo;
 		toReadCount += TO_READ_TOUT;
-		// Датчика входящей температуры нет, поэтому имитируем показания
-//		toReadTemperature( TO_IN );
+		toReadTemperature( TO_IN );
+		// Симуляция измерения температуры
+		//r103Mesure.to[TO_IN] = 50*16;
 		tmpTo = r103Mesure.to[TO_OUT];
-		r103Mesure.to[TO_IN] = tmpTo + 320;
+		// Датчика выходящей температуры нет, поэтому имитируем показания
 		toReadTemperature( TO_OUT );
+		// Симуляция измерения температуры
+		//r103Mesure.to[TO_OUT] = 40*16;
+		if( (tmpTo == 0) || (tmpTo == 0x7FF) ){
+			tmpTo = r103Mesure.to[TO_OUT];
+		}
 		if( tmpTo < r103Mesure.to[TO_OUT] ){
 			r103Stat.toStat = TO_UP;
 		}
@@ -215,7 +221,8 @@ void timersProcess( void ) {
 	// Таймаут для считывания датчиков двери
 	if ( secondFlag ) {
 		secondFlag = FALSE;
-		flowCount += 8;
+		// Симуляция водомера
+		// flowCount += 10;
 		flowGetVolume();
 		flowSecondProcess();
 	}
@@ -223,8 +230,6 @@ void timersProcess( void ) {
 
 // Инициализация таймера микросекундных задержек
 void delayUsInit( void ) {
-	NVIC_InitTypeDef DELAY_NVIC_InitStructure;
-
 
 	RCC->APB1ENR |= RCC_APB1ENR_TIM4EN;
 

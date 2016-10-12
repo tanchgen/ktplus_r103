@@ -197,7 +197,7 @@ void toReadTemperature( toSensNum toNum ) {
 	GPIO_TypeDef * port = owToDev[toNum].port;
 
 	if( toOwReset( toNum ) ){
-		r103Mesure.to[toNum] = 0xFFFF;
+		r103Mesure.to[toNum] = 0x7FF;
 		return;
 	}
 	toOwWrite( toNum, SCIP_ROM );

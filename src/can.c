@@ -21,7 +21,7 @@ void canInit(void)
 
 	RCC->APB1ENR |= RCC_APB1Periph_CAN1;
 
-#define DEV_SIGNATURE			0x1FFFF7E8
+#define DEV_SIGNATURE			(0x1FFFF7E8+8)
 	selfDevId = (*(uint32_t *)DEV_SIGNATURE) & 0xFFFFF;
 	canBspInit();
 
@@ -303,7 +303,7 @@ void canSendMsg( eMessId msgId, uint32_t data ) {
 	canId.coldHot = r103Mesure.coldHot;
 	canId.s207 = nS207_DEV;
 
-	if ( (msgId == TO_IN_MSG) || (msgId == TO_OUT_MSG) || (msgId == TO_DELTA_HOUR) ) {
+	if ( (msgId == TO_IN_MSG) || (msgId == TO_OUT_MSG) ) {
 		// Для температуры - данные 16-и битные со знаком
 		*((int16_t *)canTxMsg.Data) = *((int16_t *)&data);
 		canTxMsg.DLC = 2;
