@@ -46,7 +46,7 @@ typedef struct {
 } tMesure;
 
 typedef struct {
-	enum _toStat toStat;			// Изменение вызодящей температуры: Растет, Падает, Не меняется
+	enum _toStat toStat;			// Изменение выходящей температуры: Растет, Падает, Не меняется
 	uint8_t flowStat;					// Задвижка установлена в требуемое положение или нет...
 } tR103Stat;
 

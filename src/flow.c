@@ -68,19 +68,15 @@ void flowSecondProcess( void ) {
 	static uint32_t dToHour;
 	int16_t deltaTo;
 
-
 	//	Вычисление тепловой энергии за секунду
 	deltaTo = ((r103Mesure.to[r103Mesure.coldHot ^ 0x1] - r103Mesure.to[r103Mesure.coldHot]));
-	if( deltaTo < 0){
+	if( (deltaTo<0) || (r103Mesure.to[TO_IN] == 0x7FF) || (r103Mesure.to[TO_OUT] == 0x7FF) ){
 		deltaTo =0;
 	}
-	dToHour += deltaTo/16.0;
-	sigmh = (r103Mesure.to[r103Mesure.coldHot ^ 0x1] - r103Mesure.to[r103Mesure.coldHot]);
-	if( sigmh < 0){
-		sigmh =0;
-	}
+	dToHour += deltaTo;
+	sigmh = deltaTo;
 	sigmh *= C_H2O;
-	sigmh *= 0.0625;
+	sigmh /= 16.0;
 	r103Mesure.qSec = sigmh * r103Mesure.flowSec;
 	fMin += r103Mesure.flowSec;
 	qMin += r103Mesure.qSec;
@@ -93,7 +89,7 @@ void flowSecondProcess( void ) {
 		if( !(sysTime.Minutes) ){
 			canSendMsg( FLOW_HOUR, fHour );
 			fHour = 0;
-			canSendMsg(	TO_DELTA_HOUR, dToHour );
+			canSendMsg(	TO_DELTA_HOUR, dToHour/16 );
 			dToHour = 0;
 		}
 		fMin = 0;

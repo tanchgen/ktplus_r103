@@ -58,11 +58,11 @@ void thermoProcess( void ){
 	uint8_t newToData = FALSE;
 	int16_t dTo = (r103Mesure.toAdj - r103Mesure.to[TO_OUT]) / 8;
 
-	if( (dTo > 0) && ((r103Stat.toStat == TO_DOWN) || (r103Stat.toStat == TO_STOP)) ){
+	if( (dTo > 2) && ((r103Stat.toStat == TO_DOWN) || (r103Stat.toStat == TO_STOP)) ){
 		newToData = TRUE;
 		r103Stat.toStat = TO_UP;
 	}
-	if( (dTo < 0) && ((r103Stat.toStat == TO_UP) || (r103Stat.toStat == TO_STOP)) ) {
+	if( (dTo < -2) && ((r103Stat.toStat == TO_UP) || (r103Stat.toStat == TO_STOP)) ) {
 		newToData = TRUE;
 		r103Stat.toStat = TO_DOWN;
 	}

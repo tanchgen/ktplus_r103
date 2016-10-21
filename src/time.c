@@ -222,7 +222,7 @@ void timersProcess( void ) {
 	if ( secondFlag ) {
 		secondFlag = FALSE;
 		// Симуляция водомера
-		// flowCount += 10;
+		 canSendMsg( VALVE_DEG, 0 );
 		flowGetVolume();
 		flowSecondProcess();
 	}
