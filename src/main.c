@@ -53,51 +53,25 @@ int main(int argc, char* argv[]) {
 }
 
 void thermoProcess( void ){
-	static uint8_t dDeg;
-	static int8_t sign;
 	uint8_t newToData = FALSE;
 	int16_t dTo = (r103Mesure.toAdj - r103Mesure.to[TO_OUT]) / 8;
 
-	if( (dTo > 2) && ((r103Stat.toStat == TO_DOWN) || (r103Stat.toStat == TO_STOP)) ){
-		newToData = TRUE;
-		r103Stat.toStat = TO_UP;
-	}
-	if( (dTo < -2) && ((r103Stat.toStat == TO_UP) || (r103Stat.toStat == TO_STOP)) ) {
-		newToData = TRUE;
-		r103Stat.toStat = TO_DOWN;
-	}
-	if( newToData ){
-		r103Mesure.flowAdj = getDemandFlow();
-		r103Mesure.degAdj = r103Mesure.degCur;
-		dDeg = 5;
-		sign = 1;
-	}
-	if(r103Mesure.degAdj == r103Mesure.degCur){
-		if( r103Stat.flowStat == TRUE ){
-			// Вычисляем новое положение задвижки
-			if ( r103Mesure.flowAdj == r103Mesure.flowSec ) {
-				return ;
-			}
-			if( r103Mesure.flowAdj > r103Mesure.flowSec ) {
-				if( sign < 0){
-					dDeg /=2;
-				}
-				sign = 1;
-			}
-			else if( r103Mesure.flowAdj < r103Mesure.flowSec ) {
-				if( sign > 0){
-					dDeg /=2;
-				}
-				sign = -1;
-			}
-			r103Mesure.degAdj += sign * dDeg;
+	if( r103Stat.flowStat ){
+		if( (dTo > 2) && ((r103Stat.toStat == TO_DOWN) || (r103Stat.toStat == TO_STOP)) ){
+			newToData = TRUE;
+			r103Stat.toStat = TO_UP;
+		}
+		if( (dTo < -2) && ((r103Stat.toStat == TO_UP) || (r103Stat.toStat == TO_STOP)) ) {
+			newToData = TRUE;
+			r103Stat.toStat = TO_DOWN;
+		}
+		if( newToData ){
+			r103Mesure.degAdj = r103Mesure.degCur + 1;
 			canSendMsg( VALVE_DEG, r103Mesure.degAdj );
 			r103Stat.flowStat = FALSE;
 		}
 	}
-	else {
-		r103Stat.flowStat = FALSE;
-	}
+
 }
 
 // ----------------------------------------------------------------------------

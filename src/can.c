@@ -277,13 +277,14 @@ void canProcess( void ){
   			else {
   				r103Mesure.degAdj = (uint8_t)*((uint32_t *)&rxMessage.Data);
   			}
+*/
   			if( r103Mesure.degAdj == r103Mesure.degCur ){
   				r103Stat.flowStat = TRUE;
   			}
   			else {
   				r103Stat.flowStat = FALSE;
   			}
-*/
+
   			break;
   		case TIME:
   			uxTime = *((uint32_t *)&rxMessage.Data);

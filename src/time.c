@@ -207,10 +207,10 @@ void timersProcess( void ) {
 		if( (tmpTo == 0) || (tmpTo == 0x7FF) ){
 			tmpTo = r103Mesure.to[TO_OUT];
 		}
-		if( tmpTo < r103Mesure.to[TO_OUT] ){
+		if( tmpTo < (r103Mesure.to[TO_OUT] - 4) ){
 			r103Stat.toStat = TO_UP;
 		}
-		else if( tmpTo > r103Mesure.to[TO_OUT] ){
+		else if( tmpTo > (r103Mesure.to[TO_OUT] + 4)){
 			r103Stat.toStat = TO_DOWN;
 		}
 		else {
