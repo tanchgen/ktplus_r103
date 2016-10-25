@@ -33,7 +33,6 @@ int main(int argc, char* argv[]) {
   // Use SysTick as reference for the delay loops.
   SysTick_Config (SystemCoreClock / TIMER_FREQUENCY_HZ);
 
-
   memset((uint8_t *)&r103Mesure, 0, sizeof(r103Mesure));
 #warning " !!! Указать, какому контуру принадлежит контроллер (Горячий/Холодный)"
   r103Mesure.coldHot = COLD;
@@ -48,7 +47,7 @@ int main(int argc, char* argv[]) {
     {
   		timersProcess();
   		canProcess();
-//  		thermoProcess();
+  		thermoProcess();
     }
 }
 
@@ -57,16 +56,39 @@ void thermoProcess( void ){
 	int16_t dTo = (r103Mesure.toAdj - r103Mesure.to[TO_OUT]) / 8;
 
 	if( r103Stat.flowStat ){
-		if( (dTo > 2) && ((r103Stat.toStat == TO_DOWN) || (r103Stat.toStat == TO_STOP)) ){
+		if( (dTo > 1) && ((r103Stat.toStat == TO_DOWN) || (r103Stat.toStat == TO_STOP)) ){
 			newToData = TRUE;
 			r103Stat.toStat = TO_UP;
 		}
-		if( (dTo < -2) && ((r103Stat.toStat == TO_UP) || (r103Stat.toStat == TO_STOP)) ) {
+		if( (dTo < -1) && ((r103Stat.toStat == TO_UP) || (r103Stat.toStat == TO_STOP)) ) {
 			newToData = TRUE;
 			r103Stat.toStat = TO_DOWN;
 		}
 		if( newToData ){
-			r103Mesure.degAdj = r103Mesure.degCur + 1;
+			int8_t deltaDeg;
+			if( r103Mesure.coldHot == COLD  ){
+				if( r103Stat.toStat == TO_DOWN ){
+					deltaDeg = DELTA_DEG;
+				}
+				else {
+					deltaDeg = -DELTA_DEG;
+				}
+			}
+			else {
+				if( r103Stat.toStat == TO_DOWN ){
+					deltaDeg = -DELTA_DEG;
+				}
+				else {
+					deltaDeg = DELTA_DEG;
+				}
+			}
+			r103Mesure.degAdj = r103Mesure.degCur + deltaDeg;
+			if( r103Mesure.degAdj < 0  ){
+				r103Mesure.degAdj = 0;
+			}
+			else if( r103Mesure.degAdj > 90 ){
+				r103Mesure.degAdj = 90;
+			}
 			canSendMsg( VALVE_DEG, r103Mesure.degAdj );
 			r103Stat.flowStat = FALSE;
 		}

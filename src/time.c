@@ -218,11 +218,10 @@ void timersProcess( void ) {
 		}
 	}
 
-	// Таймаут для считывания датчиков двери
+	// Секундный таймер
 	if ( secondFlag ) {
 		secondFlag = FALSE;
 		// Симуляция водомера
-		 canSendMsg( VALVE_DEG, 0 );
 		flowGetVolume();
 		flowSecondProcess();
 	}
