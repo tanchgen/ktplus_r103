@@ -20,6 +20,11 @@
 
 #define FLOW_READ_TOUT							1000
 
+// Коэффициент пересчета имп. в поток (см3 на импульс)
+#define KFLOW								(33)
+// Коэффициент коррекции определенный опытным путем
+#define KFLOW_CORRECT				((float)0.987654321)
+
 extern volatile uint32_t flowCount;
 
 void flowSensInit(void);

@@ -83,6 +83,11 @@ extern volatile time_t uxTime;
 extern tDate sysDate;
 extern tTime sysTime;
 
+extern volatile uint8_t minuteFlag;
+extern volatile uint8_t hourFlag;
+extern volatile uint8_t	dayFlag;
+extern volatile uint8_t	weekFlag;
+extern volatile uint8_t	monthFlag;
 
 extern volatile uint32_t myTick;
 extern volatile uint32_t usDelFlag;

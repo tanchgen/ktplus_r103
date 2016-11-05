@@ -15,7 +15,7 @@
 #include "stm32f10x.h"
 #include "my_time.h"
 #include "stm32f10x_it.h"
-//#include "onewire.h"
+#include "flow.h"
 //#include "logger.h"
 //#include "thermo.h"
 
@@ -27,10 +27,17 @@ volatile uint32_t usDelFlag;
 tDate sysDate;
 tTime sysTime;
 
+static uint8_t  secondFlag;
+
+volatile uint8_t minuteFlag = RESET;
+volatile uint8_t hourFlag = RESET;
+volatile uint8_t	dayFlag = RESET;
+volatile uint8_t	weekFlag = RESET;
+volatile uint8_t	monthFlag = RESET;
+
 extern RCC_ClocksTypeDef RCC_Clocks;
 
 uint32_t toReadCount;
-uint8_t  secondFlag = FALSE;
 
 /*
 // *********** Инициализация структуры ВРЕМЯ (сейчас - системное ) ************
@@ -167,7 +174,7 @@ void timersHandler( void ) {
 /*	// Таймаут для логгирования температуры
 	if ( toLogCount > 1) {
 		toLogCount--;
-	}
+	}=
 */
 	// Таймаут для считывания температуры
 	if ( toReadCount > 1) {
@@ -176,9 +183,28 @@ void timersHandler( void ) {
 
 	// Секундный таймер
 	if ( !(myTick % 1000) ) {
-		secondFlag = TRUE;
+		secondFlag = SET;
 		uxTime++;
 		xUtime2Tm( &sysDate, & sysTime, uxTime );
+		// Выставляем флаги минут, часов, дней, недель и месяцев
+		if( sysTime.Seconds == 0 ){
+			minuteFlag = SET;
+			if( sysTime.Minutes == 0){
+				hourFlag = SET;
+				if( sysTime.Hours == 0){
+					dayFlag = SET;
+					if( sysDate.WeekDay == 1){
+						weekFlag = SET;
+					}
+					if( sysDate.Date == 1){
+						monthFlag = SET;
+					}
+				}
+			}
+		}
+
+		// Запоминаем счетчик потока, чтоб было точно
+		r103Mesure.flowNow = flowCount * KFLOW;
 	}
 
 
@@ -192,6 +218,15 @@ void timersProcess( void ) {
 		toLogWrite();
 	}
 */
+
+	// Секундный таймер
+	if ( secondFlag ) {
+		secondFlag = RESET;
+		// Симуляция водомера
+		flowGetVolume();
+		flowSecondProcess();
+	}
+
 	// Таймаут для считывания температуры
 	if ( toReadCount == 1 ) {
 		int16_t tmpTo;
@@ -216,14 +251,6 @@ void timersProcess( void ) {
 		else {
 				r103Stat.toStat = TO_STOP;
 		}
-	}
-
-	// Секундный таймер
-	if ( secondFlag ) {
-		secondFlag = FALSE;
-		// Симуляция водомера
-		flowGetVolume();
-		flowSecondProcess();
 	}
 }
 

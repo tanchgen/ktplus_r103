@@ -7,12 +7,10 @@
 
 #include <main.h>
 #include "my_time.h"
+#include "flow.h"
 
 volatile uint32_t flowCount;
-// Коэффициент пересчета имп. в поток (см3 на импульс)
-#define KFLOW								(33)
-// Коэффициент коррекции определенный опытным путем
-#define KFLOW_CORRECT				((float)0.987654321)
+
 uint16_t ktf[21];					// Таблица поправочных коэффициентов потока на температуру
 
 void flowSensInit(void)
@@ -49,7 +47,6 @@ void flowSensInit(void)
 
 void flowGetVolume(void) {
 
-	r103Mesure.flowNow = flowCount * KFLOW;
 	if(r103Mesure.flowNow < r103Mesure.flowPrev){
 		// Если счетчик flowCount перешел через 0
 		r103Mesure.flowNow += (0xFFFFFFFF) - r103Mesure.flowPrev;
@@ -84,35 +81,48 @@ void flowSecondProcess( void ) {
 	r103Mesure.qSec = sigmh * r103Mesure.flowSec;
 	fMin += r103Mesure.flowSec;
 	qMin += r103Mesure.qSec;
-	if( !(sysTime.Seconds ) ){
+
+	r103Mesure.qDay += 	r103Mesure.qSec;
+
+	if( minuteFlag ){
+		// Минута окончилась.
+		minuteFlag = FALSE;
+
+		canSendMsg( TIME, uxTime);
 		canSendMsg( TO_IN_MSG, r103Mesure.to[TO_IN]);
 		canSendMsg( TO_OUT_MSG, r103Mesure.to[TO_OUT]);
 		canSendMsg( FLOW, fMin / 60 );
 		canSendMsg( POWER_SEC, qMin / 60 );
 		fHour += fMin;
-		if( !(sysTime.Minutes) ){
+		fMin = 0;
+		qMin = 0;
+		if( hourFlag ){
+			// Час окончился
+			hourFlag = FALSE;
 			canSendMsg( FLOW_HOUR, fHour );
 			fHour = 0;
 			canSendMsg(	TO_DELTA_HOUR, dToHour/16 );
 			dToHour = 0;
-		}
-		fMin = 0;
-		qMin = 0;
-	}
-
-	r103Mesure.qDay += 	r103Mesure.qSec;
-	if( !(sysTime.Seconds || sysTime.Minutes || sysTime.Hours) ){
-		r103Mesure.qWeek += r103Mesure.qDay;
-		r103Mesure.qMonth += r103Mesure.qDay;
-		canSendMsg( POWER_DAY, r103Mesure.qDay );
-		r103Mesure.qDay = 0;
-		if( sysDate.WeekDay == 1 ) {
-			canSendMsg( POWER_WEEK, r103Mesure.qWeek );
-			r103Mesure.qWeek = 0;
-		}
-		if( sysDate.Date == 1 ) {
-			canSendMsg( POWER_MON, r103Mesure.qMonth );
-			r103Mesure.qMonth = 0;
+			if( dayFlag ){
+				// День закончился
+				dayFlag =FALSE;
+				r103Mesure.qWeek += r103Mesure.qDay;
+				r103Mesure.qMonth += r103Mesure.qDay;
+				canSendMsg( POWER_DAY, r103Mesure.qDay );
+				r103Mesure.qDay = 0;
+				if( weekFlag ) {
+					// Неделя закончилась
+					weekFlag = FALSE;
+					canSendMsg( POWER_WEEK, r103Mesure.qWeek );
+					r103Mesure.qWeek = 0;
+				}
+				if( monthFlag ) {
+					// Месяц закончился
+					monthFlag = FALSE;
+					canSendMsg( POWER_MON, r103Mesure.qMonth );
+					r103Mesure.qMonth = 0;
+				}
+			}
 		}
 	}
 }

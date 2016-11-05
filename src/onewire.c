@@ -48,6 +48,7 @@ static void toPinSetInput( toSensNum toNum );
 // Настройка выводов GPIO на передачу 1-Wire
 static void toPinSetOutput( toSensNum toNum );
 
+static void toMesureTemp( toSensNum toNum );
 
 void toInit( void ){
 	// Инициализация выводов для работы с 1-wire To-датчиками
@@ -75,6 +76,9 @@ void toInit( void ){
 	toPinSetInput( TO_OUT );
 	toReadCount = TO_READ_TOUT;
 	// Сразу измерим температуру
+	toMesureTemp( TO_IN );
+	toMesureTemp( TO_OUT );
+	myDelay( 760 );
 	toReadTemperature( TO_IN );
 	toReadTemperature( TO_OUT );
 }
@@ -188,29 +192,31 @@ void toOwWrite(toSensNum toNum, uint8_t value) {
 	}
 }
 
-void toReadTemperature( toSensNum toNum ) {
-//	uint8_t sendBuf[11];
-	int16_t readBuf;
-
-	uint16_t pin = owToDev[toNum].pin;
+static void toMesureTemp( toSensNum toNum ){
+//	uint16_t pin = owToDev[toNum].pin;
 //	uint8_t pinNum = owToDev[toNum].pinNum;
-	GPIO_TypeDef * port = owToDev[toNum].port;
+//	GPIO_TypeDef * port = owToDev[toNum].port;
 
-	if( toOwReset( toNum ) ){
-		r103Mesure.to[toNum] = 0x7FF;
-		return;
-	}
 	toOwWrite( toNum, SCIP_ROM );
 	toOwWrite( toNum, TERM_CONVERT );
 
-	// При паразитном питании требуется дополнительная подтяжка провода шины к питанию на >10мс
-	// Включаем подтяжку шины 1-Wire к Vdd
-	port->BSRR |= pin;										// Выставляем в 1
-	toPinSetOutput( toNum );
+	/*
+		// При паразитном питании требуется дополнительная подтяжка провода шины к питанию на >10мс
+		// Включаем подтяжку шины 1-Wire к Vdd
+		port->BSRR |= pin;										// Выставляем в 1
+		toPinSetOutput( toNum );
 
-	// Задержка на пересчет измерения
-	// Задержка для данной точности датчиков ( 95, 190, 380 или 760 мс )
-	myDelay( MESUR_TIME_9 << (owToDev[toNum].mesurAcc - 9) );
+		// Задержка на пересчет измерения
+		// Задержка для данной точности датчиков ( 95, 190, 380 или 760 мс )
+		myDelay( MESUR_TIME_9 << (owToDev[toNum].mesurAcc - 9) );
+	*/
+
+
+}
+
+void toReadTemperature( toSensNum toNum ) {
+//	uint8_t sendBuf[11];
+	int16_t readBuf;
 
 	// Считываем показания датчиков
 	toOwReset( toNum );
@@ -222,6 +228,17 @@ void toReadTemperature( toSensNum toNum ) {
 	if( readBuf & 0xf800){
 		readBuf |= 0xf800;
 	}
+
+	//
 	r103Mesure.to[toNum] = readBuf & ~(0x0003);
+	if( toOwReset( toNum ) ){
+		r103Mesure.to[toNum] = 0x7FF;
+		return;
+	}
+
+	// Задаем измерение на сдедующий раз
+	// Интервал до следующего считывания не меньше, чем:
+	// 				Задержка для данной точности датчиков ( 95, 190, 380 или 760 мс )
+	toMesureTemp( toNum );
 }
 

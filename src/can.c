@@ -258,13 +258,36 @@ void canProcess( void ){
   	if (  readBuff( &canTxBuf, (uint8_t *)&txMessage) ) {
 			CAN_Transmit(CAN1, (CanTxMsg *)&txMessage);
 		}
-  	else {
-
-  	}
-
-
   }
 
+/*
+  uint32_t mailEmpty = 0;
+
+  if( (CAN1->TSR & CAN_TSR_TME0) == CAN_TSR_TME0 ) {
+  	mailEmpty = CAN_TSR_TXOK0;
+  }
+  else if( (CAN1->TSR & CAN_TSR_TME1) == CAN_TSR_TME1 ) {
+  	mailEmpty = CAN_TSR_TXOK1;
+  }
+  else if( (CAN1->TSR & CAN_TSR_TME2) == CAN_TSR_TME2 ) {
+  	mailEmpty = CAN_TSR_TXOK2;
+  }
+  if( mailEmpty ){
+  	CanTxMsg txMessage;
+//Читаем предназначенные для отправки сообщения, если они есть, и запихиваем его в буфер отправки.
+  	if (  readBuff( &canTxBuf, (uint8_t *)&txMessage) ) {
+  		for( uint8_t i = 0; i < 5; i++){
+  			CAN_Transmit(CAN1, (CanTxMsg *)&txMessage);
+  			uint32_t tout = myTick + 4;			// Для скорости 250 кбит/с
+  			while( tout < myTick ){
+  				if(CAN1->TSR & mailEmpty){
+  					i = 5;
+  				}
+  				break;
+  			}
+		}
+  }
+*/
   if( readBuff( &canRxBuf, (uint8_t *)&rxMessage) ) {
   	tCanId canid;
   	getIdList( &canid, rxMessage.ExtId );
