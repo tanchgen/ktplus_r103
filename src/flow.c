@@ -73,6 +73,10 @@ void flowSecondProcess( void ) {
 	if( (deltaTo<0) || (r103Mesure.to[TO_IN] == 0x7FF) || (r103Mesure.to[TO_OUT] == 0x7FF) ){
 		deltaTo =0;
 	}
+// ********** !!! Симуляция !!! ****************
+	deltaTo = 8;
+	r103Mesure.flowSec = 20;
+
 	dToHour += deltaTo;
 	sigmh = deltaTo;
 	sigmh *= C_H2O;

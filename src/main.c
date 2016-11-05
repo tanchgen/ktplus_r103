@@ -15,7 +15,7 @@
 
 tMesure	r103Mesure;
 tR103Stat r103Stat;
-uint32_t VlvDevId;			// Иденитификатор контроллера задвижки
+uint32_t VlvDevId = 0;			// Иденитификатор контроллера задвижки
 
 RCC_ClocksTypeDef RCC_Clocks;
 
@@ -35,7 +35,7 @@ int main(int argc, char* argv[]) {
 
   memset((uint8_t *)&r103Mesure, 0, sizeof(r103Mesure));
 #warning " !!! Указать, какому контуру принадлежит контроллер (Горячий/Холодный)"
-  r103Mesure.coldHot = COLD;
+  r103Mesure.coldHot = HOT;
 
   canInit();
   delayUsInit();

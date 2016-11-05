@@ -138,7 +138,8 @@ void canFilterInit( void ){
 	// Для тестирования в колбцевом режиме - маска = 0x00000000
 		filter.idMask = 0;
 	#else
-		filter.idMask = CUR_ADJ_MASK | S207_MASK | COLD_HOT_MASK | MSG_ID_MASK | DEV_ID_MASK;
+		// Пока без идентификатора конроллера задвижки
+		filter.idMask = CUR_ADJ_MASK | S207_MASK | COLD_HOT_MASK | MSG_ID_MASK /*| DEV_ID_MASK*/;
 	#endif
 
 		filter.ideList = 0;
@@ -270,7 +271,12 @@ void canProcess( void ){
   	switch( canid.msgId ){
   		case VALVE_DEG:
   			if( canid.adjCur == CUR ){
-  				r103Mesure.degCur = (uint8_t)*((uint32_t *)&rxMessage.Data);
+  				if( VlvDevId == 0 ){
+  					VlvDevId = canid.devId & 0xFFFFF;
+  				}
+  				if ( VlvDevId == canid.devId ) {
+  					r103Mesure.degCur = (uint8_t)*((uint32_t *)&rxMessage.Data);
+  				}
   			}
 /* Требуемый угол задвижки и флаг "Установлена в требуюмое положение" задаються в flowProcess
   			else {
@@ -283,8 +289,11 @@ void canProcess( void ){
   			uxTime = *((uint32_t *)&rxMessage.Data);
   			xUtime2Tm( &sysDate, &sysTime, uxTime );
   			break;
-  		case TO_IN_MSG:
+  		case TO_OUT_MSG:
   			r103Mesure.toAdj = *((int16_t *)&rxMessage.Data);
+  			break;
+  		case VALVE_ID:
+  			VlvDevId = *((int32_t *)&rxMessage.Data) & 0xFFFFF;
   			break;
   	}
   }
