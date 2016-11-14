@@ -61,26 +61,24 @@ void flowSecondProcess( void ) {
 	double sigmh;
 	static uint32_t fMin;
 	static uint32_t fHour;
-	static uint32_t qMin;
 	static uint32_t dToHour;
 	int16_t deltaTo;
 
-	//	Вычисление тепловой энергии за секунду
-	deltaTo = ((r103Mesure.to[r103Mesure.coldHot ^ 0x1] - r103Mesure.to[r103Mesure.coldHot]));
-	if( (deltaTo<0) || (r103Mesure.to[TO_IN] == 0x7FF) || (r103Mesure.to[TO_OUT] == 0x7FF) ){
+	//	Вычисление тепловой энергии за <i>
+	deltaTo = ((r103Mesure.to[TO_IN] - r103Mesure.to[TO_OUT]));
+	if(deltaTo < 0){
+		deltaTo = -deltaTo;
+	}
+	if( (r103Mesure.to[TO_IN] == 0x7FF) || (r103Mesure.to[TO_OUT] == 0x7FF) ){
 		deltaTo =0;
 	}
-// ********** !!! Симуляция !!! ****************
-	deltaTo = 8;
-	r103Mesure.flowSec = 20;
+
+	// ********** !!! Симуляция !!! ****************
+//	deltaTo = 3*16;
+//	r103Mesure.flowSec = 20;
 
 	dToHour += deltaTo;
-	sigmh = deltaTo;
-	sigmh *= C_H2O;
-	sigmh /= 16.0;
-	r103Mesure.qSec = sigmh * r103Mesure.flowSec;
 	fMin += r103Mesure.flowSec;
-	qMin += r103Mesure.qSec;
 
 	r103Mesure.qDay += 	r103Mesure.qSec;
 
@@ -88,14 +86,19 @@ void flowSecondProcess( void ) {
 		// Минута окончилась.
 		minuteFlag = FALSE;
 
+		sigmh = deltaTo;
+		sigmh *= C_H2O;
+		sigmh /= 16.0;
+		r103Mesure.qSec = (sigmh * fMin)/60;
+		r103Mesure.qDay += 	r103Mesure.qSec;
+
 		canSendMsg( TIME, uxTime);
 		canSendMsg( TO_IN_MSG, r103Mesure.to[TO_IN]);
 		canSendMsg( TO_OUT_MSG, r103Mesure.to[TO_OUT]);
 		canSendMsg( FLOW, fMin / 60 );
-		canSendMsg( POWER_SEC, qMin / 60 );
+		canSendMsg( POWER_SEC, r103Mesure.qSec );
 		fHour += fMin;
 		fMin = 0;
-		qMin = 0;
 		if( hourFlag ){
 			// Час окончился
 			hourFlag = FALSE;

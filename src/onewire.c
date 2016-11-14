@@ -81,6 +81,8 @@ void toInit( void ){
 	myDelay( 760 );
 	toReadTemperature( TO_IN );
 	toReadTemperature( TO_OUT );
+	r103Mesure.toAdj = r103Mesure.toPrev = r103Mesure.to[TO_OUT];
+
 }
 
 static void toPinSetInput( toSensNum toNum ) {

@@ -19,6 +19,8 @@ uint32_t VlvDevId = 0;			// Иденитификатор контроллера 
 
 RCC_ClocksTypeDef RCC_Clocks;
 
+#define TO_INTERVAL  5000
+
 void thermoProcess( void );
 
 // ----- main() ---------------------------------------------------------------
@@ -52,8 +54,30 @@ int main(int argc, char* argv[]) {
 }
 
 void thermoProcess( void ){
+	static uint32_t toTout;
+	int8_t toDir;
 	uint8_t newToData = FALSE;
-	int16_t dTo = (r103Mesure.toAdj - r103Mesure.to[TO_OUT]) / 8;
+	int16_t dTo;
+
+	if( toTout > myTick ){
+		return;
+	}
+	toTout += TO_INTERVAL;
+
+	toDir = (r103Mesure.to[TO_OUT] - r103Mesure.toPrev) / 16;
+	if( toDir > 1 ) {
+		r103Stat.toStat = TO_UP;
+	}
+	else if ( toDir < -1 ) {
+		r103Stat.toStat = TO_DOWN;
+	}
+	else {
+		r103Stat.toStat = TO_STOP;
+	}
+
+	r103Mesure.toPrev = r103Mesure.to[TO_OUT];
+
+	dTo = (r103Mesure.toAdj - r103Mesure.to[TO_OUT]) / 16;
 
 	if( r103Stat.flowStat ){
 		if( (dTo > 1) && ((r103Stat.toStat == TO_DOWN) || (r103Stat.toStat == TO_STOP)) ){

@@ -109,13 +109,14 @@ void canFilterInit( void ){
 	canId.s207 = S207_DEV;
 	canId.devId = selfDevId;
 	// Фильтр принимаемых устройств
+#define CAN_TEST 0
 #if CAN_TEST
 // Для тестирования в колбцевом режиме - маска = 0x00000000
 	filter.idList = 0;
 	filter.idMask = 0;
 #else
 	filter.idList = setIdList( &canId );
-	filter.idMask = S207_MASK;
+	filter.idMask = CUR_ADJ_MASK | S207_MASK | DEV_ID_MASK;
 #endif
 
 	filter.ideList = 0;
@@ -168,7 +169,6 @@ void canFilterUpdate( tFilter * filter, uint8_t filterNum ) {
 	CAN_FilterInitStruct.CAN_FilterScale = CAN_FilterScale_32bit;
 	CAN_FilterInitStruct.CAN_FilterActivation = ENABLE;
 	CAN_FilterInit(&CAN_FilterInitStruct);
-
 }
 
 /*
@@ -293,20 +293,15 @@ void canProcess( void ){
   	getIdList( &canid, rxMessage.ExtId );
   	switch( canid.msgId ){
   		case VALVE_DEG:
-  			if( canid.adjCur == CUR ){
-  				if( VlvDevId == 0 ){
-  					VlvDevId = canid.devId & 0xFFFFF;
-  				}
-  				if ( VlvDevId == canid.devId ) {
-  					r103Mesure.degCur = (uint8_t)*((uint32_t *)&rxMessage.Data);
-  				}
+  			if( (canid.adjCur == CUR) && (VlvDevId == canid.devId) ) {
+ 					r103Mesure.degCur = (uint8_t)*((uint32_t *)&rxMessage.Data);
+ 	 				r103Stat.flowStat = TRUE;
   			}
 /* Требуемый угол задвижки и флаг "Установлена в требуюмое положение" задаються в flowProcess
   			else {
   				r103Mesure.degAdj = (uint8_t)*((uint32_t *)&rxMessage.Data);
   			}
 */
- 				r103Stat.flowStat = TRUE;
   			break;
   		case TIME:
   			uxTime = *((uint32_t *)&rxMessage.Data);
