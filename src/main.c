@@ -19,7 +19,7 @@ uint32_t VlvDevId = 0;			// Иденитификатор контроллера 
 
 RCC_ClocksTypeDef RCC_Clocks;
 
-#define TO_INTERVAL  5000
+#define TO_INTERVAL  15000
 
 void thermoProcess( void );
 
@@ -37,7 +37,7 @@ int main(int argc, char* argv[]) {
 
   memset((uint8_t *)&r103Mesure, 0, sizeof(r103Mesure));
 #warning " !!! Указать, какому контуру принадлежит контроллер (Горячий/Холодный)"
-  r103Mesure.coldHot = HOT;
+  r103Mesure.coldHot = COLD;
 
   canInit();
   delayUsInit();
