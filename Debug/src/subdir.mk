@@ -11,7 +11,6 @@ C_SRCS += \
 ../src/flow.c \
 ../src/fmt_translate.c \
 ../src/main.c \
-../src/my_uart.c \
 ../src/onewire.c \
 ../src/stm32f10x_it.c \
 ../src/time.c 
@@ -24,7 +23,6 @@ OBJS += \
 ./src/flow.o \
 ./src/fmt_translate.o \
 ./src/main.o \
-./src/my_uart.o \
 ./src/onewire.o \
 ./src/stm32f10x_it.o \
 ./src/time.o 
@@ -37,7 +35,6 @@ C_DEPS += \
 ./src/flow.d \
 ./src/fmt_translate.d \
 ./src/main.d \
-./src/my_uart.d \
 ./src/onewire.d \
 ./src/stm32f10x_it.d \
 ./src/time.d 

@@ -13,6 +13,7 @@
 	uint32_t selfDevId;
 
 void getIdList( tCanId *canid, uint32_t extId);
+// void sendToUart( CanTxMsg * tmp );
 
 void canInit(void)
 {
@@ -109,7 +110,7 @@ void canFilterInit( void ){
 	canId.s207 = S207_DEV;
 	canId.devId = selfDevId;
 	// Фильтр принимаемых устройств
-#define CAN_TEST 1
+#define CAN_TEST 0
 #if CAN_TEST
 // Для тестирования в колбцевом режиме - маска = 0x00000000
 	filter.idList = 0;
@@ -247,19 +248,28 @@ void canSceIrqHandler(void) {
 
 void canProcess( void ){
 	CanRxMsg rxMessage;
-  /* Select one empty transmit mailbox */
-  if( ((CAN1->TSR & CAN_TSR_TME0) == CAN_TSR_TME0) ||
+	CanTxMsg txMessage;
+/********* Для отправки по UART - не в CAN	
+  // Select one empty transmit mailbox 
+	if (  readBuff( &canTxBuf, (uint8_t *)&txMessage) ) {
+		if( ((CAN1->TSR & CAN_TSR_TME0) == CAN_TSR_TME0) ||
   		((CAN1->TSR & CAN_TSR_TME1) == CAN_TSR_TME1) ||
 			((CAN1->TSR & CAN_TSR_TME2) == CAN_TSR_TME2) ){
-
-  	CanTxMsg txMessage;
-
 //Читаем предназначенные для отправки сообщения, если они есть, и запихиваем его в буфер отправки.
-  	if (  readBuff( &canTxBuf, (uint8_t *)&txMessage) ) {
+			CAN_Transmit(CAN1, (CanTxMsg *)&txMessage);
+		}
+		sendToUart( &txMessage);
+  }
+*/
+  // Select one empty transmit mailbox 
+	if( ((CAN1->TSR & CAN_TSR_TME0) == CAN_TSR_TME0) ||
+  		((CAN1->TSR & CAN_TSR_TME1) == CAN_TSR_TME1) ||
+			((CAN1->TSR & CAN_TSR_TME2) == CAN_TSR_TME2) ){
+		//Читаем предназначенные для отправки сообщения, если они есть, и запихиваем его в буфер отправки.
+		if (  readBuff( &canTxBuf, (uint8_t *)&txMessage) ) {
 			CAN_Transmit(CAN1, (CanTxMsg *)&txMessage);
 		}
   }
-
 /*
   uint32_t mailEmpty = 0;
 
@@ -339,14 +349,18 @@ void canSendMsg( eMessId msgId, uint32_t data ) {
 	canId.s207 = nS207_DEV;
 
 	if ( (msgId == TO_IN_MSG) || (msgId == TO_OUT_MSG) ) {
+		// Включаем системное время
+		*((uint32_t *)canTxMsg.Data) = (uint32_t)uxTime;
 		// Для температуры - данные 16-и битные со знаком
-		*((int16_t *)canTxMsg.Data) = *((int16_t *)&data);
-		canTxMsg.DLC = 2;
+		*((int16_t *)(canTxMsg.Data+4)) = *((int16_t *)&data);
+		canTxMsg.DLC = 6;
 	}
 	else {
+		// Включаем системное время
+		*((uint32_t *)canTxMsg.Data) = (uint32_t)uxTime;
 		// Для всех, кроме температуры, беззнаковое 32-х битное целое
-		*((uint32_t *)canTxMsg.Data) = data;
-		canTxMsg.DLC = 4;
+		*((uint32_t *)(canTxMsg.Data+4)) = data;
+		canTxMsg.DLC = 8;
 	}
 
 	canTxMsg.ExtId = setIdList( &canId );

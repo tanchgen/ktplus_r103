@@ -130,7 +130,7 @@ void timeToStr( time_t ut, uint8_t *str ) {
 
 
 	// Заносим Год
-	year = d.Year +2000;
+	year = d.Year +1900;
 	ulToStr( year, &str);
 	*str++ = ' ';
 
@@ -203,7 +203,7 @@ void fToStr(float f, uint8_t r[], uint8_t maxLen) {
 				*(pr++) = i + '0';
 				len++;
 			}
-			while( *(pr-1) == '0'){
+			while( (*(pr-1) == '0') && (*(pr-2) != '.')){
 				pr--;
 			}
 		}

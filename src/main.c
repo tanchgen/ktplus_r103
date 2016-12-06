@@ -11,6 +11,7 @@
 #include <string.h>
 #include "stm32f10x.h"
 #include "my_time.h"
+#include "fmt_translate.h"
 
 
 tMesure	r103Mesure;
@@ -41,22 +42,28 @@ int main(int argc, char* argv[]) {
 #warning " !!! Указать, какому контуру принадлежит контроллер (Горячий/Холодный)"
 //  r103Mesure.coldHot = COLD;
 
-  usartInit();
   canInit();
   delayUsInit();
   toInit();
   flowSensInit();
 
+/*
+  usartInit();
   if ((USART1->SR & USART_SR_TXE) != RESET) {
     USART_SendData(USART1, 'A');
   }
+  uint8_t tmpdata[4] = { 0x01, 0x03, 0x57, 0x00 };
+  uint8_t tmpMsg[80];
+  uint32_t tmp32 = *((uint32_t*)tmpdata);
+  fToStr( (float)*((int32_t *)(tmpdata))/16, tmpMsg, 9 );
+*/
 
   // Infinite loop
   while (1)
     {
   		timersProcess();
   		canProcess();
-  		usartProcess();
+//  		usartProcess();
 //  		thermoProcess();
     }
 }
