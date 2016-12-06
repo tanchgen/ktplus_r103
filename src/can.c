@@ -128,6 +128,30 @@ void canFilterInit( void ){
 
 	canFilterUpdate( &filter, filterNum );
 
+	canId.adjCur = ADJ;
+	canId.coldHot = 1;
+	canId.msgId = TIME;
+	canId.s207 = S207_DEV;
+	canId.devId = selfDevId;
+	// Фильтр принимаемых устройств
+#define CAN_TEST 0
+#if CAN_TEST
+// Для тестирования в колбцевом режиме - маска = 0x00000000
+	filter.idList = 0;
+	filter.idMask = 0;
+#else
+	filter.idList = setIdList( &canId );
+	filter.idMask = CUR_ADJ_MASK | S207_MASK;
+#endif
+
+	filter.ideList = 0;
+	filter.ideMask = 0;
+	filter.rtrList = 0;
+	filter.rtrMask = 0;
+	filterNum = 2;
+
+	canFilterUpdate( &filter, filterNum );
+
 // Формируем фильтр для приема пакетов от контроллера задвижки
 		canId.adjCur = CUR;
 		canId.msgId = VALVE_DEG,								// Угол поворота задвижки
@@ -249,6 +273,7 @@ void canSceIrqHandler(void) {
 void canProcess( void ){
 	CanRxMsg rxMessage;
 	CanTxMsg txMessage;
+
 /********* Для отправки по UART - не в CAN	
   // Select one empty transmit mailbox 
 	if (  readBuff( &canTxBuf, (uint8_t *)&txMessage) ) {

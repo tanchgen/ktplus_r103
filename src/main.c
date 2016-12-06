@@ -23,8 +23,8 @@ RCC_ClocksTypeDef RCC_Clocks;
 #define TO_INTERVAL  15000
 
 void thermoProcess( void );
-void usartInit( void );
-void usartProcess( void );
+//void usartInit( void );
+//void usartProcess( void );
 
 // ----- main() ---------------------------------------------------------------
 
