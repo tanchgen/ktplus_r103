@@ -204,7 +204,7 @@ void timersHandler( void ) {
 		}
 
 		// Запоминаем счетчик потока, чтоб было точно
-		r103Mesure.flowNow = flowCount * KFLOW;
+//		r103Mesure.flowNow = flowCount * KFLOW;
 	}
 
 
@@ -223,7 +223,7 @@ void timersProcess( void ) {
 	if ( secondFlag ) {
 		secondFlag = RESET;
 		// Симуляция водомера
-		flowGetVolume();
+//		flowGetVolume();
 		flowSecondProcess();
 	}
 

@@ -104,12 +104,12 @@ void canFilterInit( void ){
 
 // Формируем фильтр для приема пакетов от S207
 	canId.adjCur = ADJ;
-	canId.coldHot = r103Mesure.coldHot;
+	canId.coldHot = 1;
 	canId.msgId = NULL_MES;
 	canId.s207 = S207_DEV;
 	canId.devId = selfDevId;
 	// Фильтр принимаемых устройств
-#define CAN_TEST 0
+#define CAN_TEST 1
 #if CAN_TEST
 // Для тестирования в колбцевом режиме - маска = 0x00000000
 	filter.idList = 0;
@@ -335,7 +335,7 @@ void canSendMsg( eMessId msgId, uint32_t data ) {
 	}
 
 	canId.msgId = msgId;
-	canId.coldHot = r103Mesure.coldHot;
+	canId.coldHot = 1;
 	canId.s207 = nS207_DEV;
 
 	if ( (msgId == TO_IN_MSG) || (msgId == TO_OUT_MSG) ) {
@@ -372,3 +372,43 @@ void getIdList( tCanId *canid, uint32_t extId){
 	canid->s207 = (extId & S207_MASK) >> 20;
 	canid->devId = (extId & DEV_ID_MASK);
 }
+
+// Для тестов
+void canRecvSimMsg( eMessId msgId, uint32_t data ) {
+	CanTxMsg canTxMsg;
+	tCanId canId;
+	// Формируем структуру canId
+
+	if( msgId == VALVE_DEG ){
+		// Если отправляем новое полодение задвижки контроллеру задвижки
+// TODO: 	Идентификатор контроллера задвижки
+		canId.devId = VlvDevId;
+	}
+	else {
+		canId.devId = selfDevId;
+	}
+
+	canId.adjCur = ADJ;
+	canId.msgId = msgId;
+	canId.coldHot = 1;
+	canId.s207 = S207_DEV;
+
+	if ( (msgId == TO_IN_MSG) || (msgId == TO_OUT_MSG) ) {
+		// Для температуры - данные 16-и битные со знаком
+		*((int16_t *)canTxMsg.Data) = *((int16_t *)&data);
+		canTxMsg.DLC = 2;
+	}
+	else {
+		// Для всех, кроме температуры, беззнаковое 32-х битное целое
+		*((uint32_t *)canTxMsg.Data) = data;
+		canTxMsg.DLC = 4;
+	}
+
+	canTxMsg.ExtId = setIdList( &canId );
+	canTxMsg.IDE = CAN_Id_Extended;
+	canTxMsg.RTR = 0;
+	canTxMsg.StdId = 0;
+
+	writeBuff( &canRxBuf, (uint8_t *)&canTxMsg );
+}
+

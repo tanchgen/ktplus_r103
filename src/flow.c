@@ -45,6 +45,84 @@ void flowSensInit(void)
 
 }
 
+void flowSecondProcess( void ) {
+#define C_H2O				4.187			// Удельная теплоемкость воды
+	double sigmh;
+	static uint32_t prevFlow;
+	static uint32_t fHour;
+	static uint32_t dToHour;
+	int16_t deltaTo;
+
+	//	Вычисление тепловой энергии за секунду
+	deltaTo = ((r103Mesure.to[TO_IN] - r103Mesure.to[TO_OUT]));
+	if( deltaTo<0 ){
+		deltaTo = -deltaTo;
+	}
+	dToHour += deltaTo;
+	// Вычисляем поток за секунду
+	// Эмуляция
+	flowCount += 10;
+	r103Mesure.flowSec = (uint32_t)((float)(flowCount - prevFlow) * KFLOW);
+	prevFlow = flowCount;
+	if( minuteFlag ){
+		// Минута окончилась.
+		minuteFlag = FALSE;
+		// Получаем поток за минуту
+		r103Mesure.flowMin = (uint32_t)((float)flowCount * KFLOW);
+		flowCount = 0;
+		// Высчитываем сигму
+		sigmh = deltaTo;
+		sigmh *= C_H2O;
+		sigmh *= 0.0625;
+		r103Mesure.qMin = sigmh * r103Mesure.flowMin;
+		canSendMsg( TO_IN_MSG, r103Mesure.to[TO_IN]);
+		canSendMsg( TO_OUT_MSG, r103Mesure.to[TO_OUT]);
+		canSendMsg( FLOW, r103Mesure.flowMin / 60 );
+		canSendMsg( POWER_SEC, r103Mesure.qMin / 60 );
+		fHour += r103Mesure.flowMin;
+		if( hourFlag ){
+			// Час окончился
+			hourFlag = FALSE;
+			canSendMsg( FLOW_HOUR, fHour );
+			fHour = 0;
+			canSendMsg(	TO_DELTA_HOUR, dToHour );
+			dToHour = 0;
+		}
+		r103Mesure.qDay += 	r103Mesure.qMin;
+		r103Mesure.flowMin = 0;
+		r103Mesure.qMin = 0;
+	}
+	if( dayFlag ){
+		// День закончился
+		dayFlag =FALSE;
+		r103Mesure.qWeek += r103Mesure.qDay;
+		r103Mesure.qMonth += r103Mesure.qDay;
+		canSendMsg( POWER_DAY, r103Mesure.qDay );
+		r103Mesure.qDay = 0;
+		if( sysDate.WeekDay == 1 ) {
+			canSendMsg( POWER_WEEK, r103Mesure.qWeek );
+			r103Mesure.qWeek = 0;
+		}
+		if( sysDate.Date == 1 ) {
+			canSendMsg( POWER_MON, r103Mesure.qMonth );
+			r103Mesure.qMonth = 0;
+		}
+	}
+}
+
+// Расчет нужного потока для получения заданной температуры
+uint32_t getDemandFlow( void ){
+
+	uint16_t dto;
+	uint16_t ndto;
+	dto = r103Mesure.to[TO_IN] - r103Mesure.to[TO_OUT];
+	ndto = r103Mesure.to[TO_IN] - r103Mesure.toAdj;
+
+	return ( (r103Mesure.flowSec * KFLOW) * dto / ndto );
+}
+
+
+/*
 void flowGetVolume(void) {
 
 	if(r103Mesure.flowNow < r103Mesure.flowPrev){
@@ -138,6 +216,5 @@ uint32_t getDemandFlow( void ){
 
 	return ( r103Mesure.flowSec * dto / ndto );
 }
-
-
+*/
 

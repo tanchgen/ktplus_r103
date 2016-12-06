@@ -25,20 +25,20 @@ enum _toStat {
 };
 
 typedef struct {
-	uint8_t coldHot;
+//	uint8_t coldHot;
 	int16_t toAdj;				// Требуемое значение температуры
 	int16_t toPrev;
 	int16_t to[2];				// Действующее значение температуры Входной[0] и Входной[1]
 	uint8_t degCur;						// Дайствующее положение задвижки
 	int8_t degAdj;						// Требуемуе полоджение задвижки
-	uint32_t qSec;
+	uint32_t qMin;
 	uint32_t qDay;
 	uint32_t qWeek;
 	uint32_t qMonth;
 	uint32_t flowAdj;
-	uint32_t flowNow;					// Текущий значение показаний расходомера
+	uint32_t flowSec;					// Текущий значение показаний расходомера
 	uint32_t flowPrev;				// Предыдущее значение показаний расходомера
-	uint32_t flowSec;					// Расход за последнюю секунду
+	uint32_t flowMin;					// Расход за последнюю секунду
 	uint32_t flowDay;					// Расход за последний день
 	uint32_t flowWeek;				// Расход за последнюю неделю
 	uint32_t flowMonth;				// Расход за последний месяц

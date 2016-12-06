@@ -10,7 +10,8 @@ C_SRCS += \
 ../system/src/stm32f1-stdperiph/stm32f10x_gpio.c \
 ../system/src/stm32f1-stdperiph/stm32f10x_rcc.c \
 ../system/src/stm32f1-stdperiph/stm32f10x_rtc.c \
-../system/src/stm32f1-stdperiph/stm32f10x_tim.c 
+../system/src/stm32f1-stdperiph/stm32f10x_tim.c \
+../system/src/stm32f1-stdperiph/stm32f10x_usart.c 
 
 OBJS += \
 ./system/src/stm32f1-stdperiph/misc.o \
@@ -19,7 +20,8 @@ OBJS += \
 ./system/src/stm32f1-stdperiph/stm32f10x_gpio.o \
 ./system/src/stm32f1-stdperiph/stm32f10x_rcc.o \
 ./system/src/stm32f1-stdperiph/stm32f10x_rtc.o \
-./system/src/stm32f1-stdperiph/stm32f10x_tim.o 
+./system/src/stm32f1-stdperiph/stm32f10x_tim.o \
+./system/src/stm32f1-stdperiph/stm32f10x_usart.o 
 
 C_DEPS += \
 ./system/src/stm32f1-stdperiph/misc.d \
@@ -28,7 +30,8 @@ C_DEPS += \
 ./system/src/stm32f1-stdperiph/stm32f10x_gpio.d \
 ./system/src/stm32f1-stdperiph/stm32f10x_rcc.d \
 ./system/src/stm32f1-stdperiph/stm32f10x_rtc.d \
-./system/src/stm32f1-stdperiph/stm32f10x_tim.d 
+./system/src/stm32f1-stdperiph/stm32f10x_tim.d \
+./system/src/stm32f1-stdperiph/stm32f10x_usart.d 
 
 
 # Each subdirectory must supply rules for building sources it contributes

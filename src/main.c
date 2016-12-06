@@ -22,6 +22,8 @@ RCC_ClocksTypeDef RCC_Clocks;
 #define TO_INTERVAL  15000
 
 void thermoProcess( void );
+void usartInit( void );
+void usartProcess( void );
 
 // ----- main() ---------------------------------------------------------------
 
@@ -37,22 +39,29 @@ int main(int argc, char* argv[]) {
 
   memset((uint8_t *)&r103Mesure, 0, sizeof(r103Mesure));
 #warning " !!! Указать, какому контуру принадлежит контроллер (Горячий/Холодный)"
-  r103Mesure.coldHot = COLD;
+//  r103Mesure.coldHot = COLD;
 
+  usartInit();
   canInit();
   delayUsInit();
   toInit();
   flowSensInit();
+
+  if ((USART1->SR & USART_SR_TXE) != RESET) {
+    USART_SendData(USART1, 'A');
+  }
 
   // Infinite loop
   while (1)
     {
   		timersProcess();
   		canProcess();
-  		thermoProcess();
+  		usartProcess();
+//  		thermoProcess();
     }
 }
 
+/*
 void thermoProcess( void ){
 	static uint32_t toTout;
 	int8_t toDir;
@@ -119,5 +128,5 @@ void thermoProcess( void ){
 	}
 
 }
-
+*/
 // ----------------------------------------------------------------------------
