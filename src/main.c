@@ -39,14 +39,14 @@ int main(int argc, char* argv[]) {
   SysTick_Config (SystemCoreClock / TIMER_FREQUENCY_HZ);
 
   memset((uint8_t *)&r103Mesure, 0, sizeof(r103Mesure));
-#warning " !!! Указать, какому контуру принадлежит контроллер (Горячий/Холодный)"
-//  r103Mesure.coldHot = COLD;
 
   canInit();
   delayUsInit();
   toInit();
   flowSensInit();
 
+  // Отправка сообщения для установки времени
+  canSendMsg( TIME, uxTime );
 /*
   usartInit();
   if ((USART1->SR & USART_SR_TXE) != RESET) {
@@ -136,4 +136,5 @@ void thermoProcess( void ){
 
 }
 */
+
 // ----------------------------------------------------------------------------
