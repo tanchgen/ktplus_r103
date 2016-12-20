@@ -85,7 +85,7 @@ void flowSecondProcess( void ) {
 			hourFlag = FALSE;
 			canSendMsg( FLOW_HOUR, fHour );
 			fHour = 0;
-//			canSendMsg(	TO_DELTA_HOUR, dToHour );
+			canSendMsg(	TO_DELTA_HOUR, dToHour );
 			dToHour = 0;
 		}
 		r103Mesure.qDay += 	r103Mesure.qMin;
