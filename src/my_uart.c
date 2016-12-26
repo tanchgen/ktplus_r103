@@ -144,7 +144,7 @@ void usartProcess( void ){
 
 }
 
-void sendToUart( CanTxMsg * tmp ){
+void sendMqttToUart( CanTxMsg * tmp ){
 
 		uint8_t top[256];
 		uint8_t msg[256];

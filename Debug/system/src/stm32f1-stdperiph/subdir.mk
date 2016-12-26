@@ -5,9 +5,11 @@
 # Add inputs and outputs from these tool invocations to the build variables 
 C_SRCS += \
 ../system/src/stm32f1-stdperiph/misc.c \
+../system/src/stm32f1-stdperiph/stm32f10x_bkp.c \
 ../system/src/stm32f1-stdperiph/stm32f10x_can.c \
 ../system/src/stm32f1-stdperiph/stm32f10x_exti.c \
 ../system/src/stm32f1-stdperiph/stm32f10x_gpio.c \
+../system/src/stm32f1-stdperiph/stm32f10x_pwr.c \
 ../system/src/stm32f1-stdperiph/stm32f10x_rcc.c \
 ../system/src/stm32f1-stdperiph/stm32f10x_rtc.c \
 ../system/src/stm32f1-stdperiph/stm32f10x_tim.c \
@@ -15,9 +17,11 @@ C_SRCS += \
 
 OBJS += \
 ./system/src/stm32f1-stdperiph/misc.o \
+./system/src/stm32f1-stdperiph/stm32f10x_bkp.o \
 ./system/src/stm32f1-stdperiph/stm32f10x_can.o \
 ./system/src/stm32f1-stdperiph/stm32f10x_exti.o \
 ./system/src/stm32f1-stdperiph/stm32f10x_gpio.o \
+./system/src/stm32f1-stdperiph/stm32f10x_pwr.o \
 ./system/src/stm32f1-stdperiph/stm32f10x_rcc.o \
 ./system/src/stm32f1-stdperiph/stm32f10x_rtc.o \
 ./system/src/stm32f1-stdperiph/stm32f10x_tim.o \
@@ -25,9 +29,11 @@ OBJS += \
 
 C_DEPS += \
 ./system/src/stm32f1-stdperiph/misc.d \
+./system/src/stm32f1-stdperiph/stm32f10x_bkp.d \
 ./system/src/stm32f1-stdperiph/stm32f10x_can.d \
 ./system/src/stm32f1-stdperiph/stm32f10x_exti.d \
 ./system/src/stm32f1-stdperiph/stm32f10x_gpio.d \
+./system/src/stm32f1-stdperiph/stm32f10x_pwr.d \
 ./system/src/stm32f1-stdperiph/stm32f10x_rcc.d \
 ./system/src/stm32f1-stdperiph/stm32f10x_rtc.d \
 ./system/src/stm32f1-stdperiph/stm32f10x_tim.d \

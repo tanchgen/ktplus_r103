@@ -12,6 +12,8 @@
 #include "stm32f10x.h"
 #include "my_time.h"
 #include "fmt_translate.h"
+#include "can.h"
+#include "buffer.h"
 
 
 tMesure	r103Mesure;
@@ -23,8 +25,8 @@ RCC_ClocksTypeDef RCC_Clocks;
 #define TO_INTERVAL  15000
 
 void thermoProcess( void );
-//void usartInit( void );
-//void usartProcess( void );
+void usartInit( void );
+void usartProcess( void );
 
 // ----- main() ---------------------------------------------------------------
 
@@ -33,6 +35,7 @@ int main(int argc, char* argv[]) {
 	(void)argv;
 	myTick = 0;
   uxTime = 1472731200;			// Unix Time = 01.09.2016г., четверг
+	uint8_t timeMsg[sizeof(CanTxMsg)];
 
   RCC_GetClocksFreq(&RCC_Clocks);
   // Use SysTick as reference for the delay loops.
@@ -40,30 +43,28 @@ int main(int argc, char* argv[]) {
 
   memset((uint8_t *)&r103Mesure, 0, sizeof(r103Mesure));
 
+  rtcSetConfig();
   canInit();
   delayUsInit();
   toInit();
   flowSensInit();
 
   // Отправка сообщения для установки времени
-  canSendMsg( TIME, uxTime );
-/*
+  canSendMsg( TIME, uxTime+25 );
+
+
   usartInit();
   if ((USART1->SR & USART_SR_TXE) != RESET) {
     USART_SendData(USART1, 'A');
   }
-  uint8_t tmpdata[4] = { 0x01, 0x03, 0x57, 0x00 };
-  uint8_t tmpMsg[80];
-  uint32_t tmp32 = *((uint32_t*)tmpdata);
-  fToStr( (float)*((int32_t *)(tmpdata))/16, tmpMsg, 9 );
-*/
+
 
   // Infinite loop
   while (1)
     {
   		timersProcess();
   		canProcess();
-//  		usartProcess();
+  		usartProcess();
 //  		thermoProcess();
     }
 }

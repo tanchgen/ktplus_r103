@@ -28,7 +28,7 @@ src/main.o: ../src/main.c ../include/main.h ../include/flow.h \
  ../system/include/stm32f1-stdperiph/stm32f10x_wwdg.h \
  ../system/include/stm32f1-stdperiph/misc.h ../include/can.h \
  ../include/onewire.h ../include/my_time.h ../include/fmt_translate.h \
- ../include/my_time.h
+ ../include/my_time.h ../include/can.h ../include/buffer.h
 
 ../include/main.h:
 
@@ -103,3 +103,7 @@ src/main.o: ../src/main.c ../include/main.h ../include/flow.h \
 ../include/fmt_translate.h:
 
 ../include/my_time.h:
+
+../include/can.h:
+
+../include/buffer.h:

@@ -64,9 +64,9 @@ void flowSecondProcess( void ) {
 //	flowCount += 10;
 	r103Mesure.flowSec = (uint32_t)((float)(flowCount - prevFlow) * KFLOW);
 	prevFlow = flowCount;
-	if( minuteFlag ){
+	if( sysRtc.MinFlag ){
 		// Минута окончилась.
-		minuteFlag = FALSE;
+		sysRtc.MinFlag = FALSE;
 		// Получаем поток за минуту
 		r103Mesure.flowMin = (uint32_t)((float)flowCount * KFLOW);
 		flowCount = 0;
@@ -80,9 +80,9 @@ void flowSecondProcess( void ) {
 		canSendMsg( FLOW, r103Mesure.flowMin / 60 );
 		canSendMsg( POWER_SEC, r103Mesure.qMin / 60 );
 		fHour += r103Mesure.flowMin;
-		if( hourFlag ){
+		if( sysRtc.HourFlag ){
 			// Час окончился
-			hourFlag = FALSE;
+			sysRtc.HourFlag = FALSE;
 			canSendMsg( FLOW_HOUR, fHour/1000 );
 			fHour = 0;
 //			canSendMsg(	TO_DELTA_HOUR, dToHour );
@@ -92,18 +92,18 @@ void flowSecondProcess( void ) {
 		r103Mesure.flowMin = 0;
 		r103Mesure.qMin = 0;
 	}
-	if( dayFlag ){
+	if( sysRtc.DayFlag ){
 		// День закончился
-		dayFlag =FALSE;
+		sysRtc.DayFlag =FALSE;
 		r103Mesure.qWeek += r103Mesure.qDay;
 		r103Mesure.qMonth += r103Mesure.qDay;
 		canSendMsg( POWER_DAY, r103Mesure.qDay );
 		r103Mesure.qDay = 0;
-		if( sysDate.WeekDay == 1 ) {
+		if( sysRtc.wday == 1 ) {
 			canSendMsg( POWER_WEEK, r103Mesure.qWeek );
 			r103Mesure.qWeek = 0;
 		}
-		if( sysDate.Date == 1 ) {
+		if( sysRtc.mday == 1 ) {
 			canSendMsg( POWER_MON, r103Mesure.qMonth );
 			r103Mesure.qMonth = 0;
 		}

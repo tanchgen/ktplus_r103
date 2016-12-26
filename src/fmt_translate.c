@@ -107,52 +107,51 @@ uint8_t hlToStr(uint32_t l, uint8_t **str){
 
 }
 
-void timeToStr( time_t ut, uint8_t *str ) {
-	tTime t;
-	tDate d;
+void timeToStr( uTime_t ut, uint8_t *str ) {
+	tRTC srtc;
 	uint16_t year;
 
-	xUtime2Tm( &d, &t, ut);
+	utime2Tm( &srtc, ut);
 
 	// Заносим число
-	if ( d.Date < 10 ){
+	if ( srtc.mday < 10 ){
 		*str++ = '0';
 	}
-	ulToStr( d.Date, &str);
+	ulToStr( srtc.mday, &str);
 	*str++ = '.';
 
 	// Заносим месяц
-	if ( d.Month < 10 ){
+	if ( srtc.month < 10 ){
 		*str++ = '0';
 	}
-	ulToStr( d.Month, &str);
+	ulToStr( srtc.month, &str);
 	*str++ = '.';
 
 
 	// Заносим Год
-	year = d.Year +1900;
+	year = srtc.year +1900;
 	ulToStr( year, &str);
 	*str++ = ' ';
 
 	// Заносим Час
-	if ( t.Hours < 10 ){
+	if ( srtc.hour < 10 ){
 		*str++ = '0';
 	}
-	ulToStr( t.Hours, &str);
+	ulToStr( srtc.hour, &str);
 	*str++ = ':';
 
 	// Заносим Минута
-	if ( t.Minutes < 10 ){
+	if ( srtc.min < 10 ){
 		*str++ = '0';
 	}
-	ulToStr( t.Minutes, &str);
+	ulToStr( srtc.min, &str);
 	*str++ = ':';
 
 	// Заносим Секунды
-	if ( t.Seconds < 10 ){
+	if ( srtc.sec < 10 ){
 		*str++ = '0';
 	}
-	ulToStr( t.Seconds, &str);
+	ulToStr( srtc.sec, &str);
 	*str = '\0';
 
 }

@@ -22,8 +22,6 @@
   */
 
 /* Includes ------------------------------------------------------------------*/
-#include <flow.h>
-#include <main.h>
 #include "stm32f10x_it.h"
 #include "my_time.h"
 #include "can.h"
@@ -39,93 +37,63 @@
 /*            Cortex-M3 Processor Exceptions Handlers                         */
 /******************************************************************************/
 
-/**
-  * @brief   This function handles NMI exception.
-  * @param  None
-  * @retval None
-  */
+/******************************************************************************
+ * 	!!! ОПРЕДЕЛЕНЫ В ./system/src/stm32f1-std/stm32f10x_it.c !!!
+ ******************************************************************************/
+
+
 void NMI_Handler(void)
 {
 }
 
-/**
-  * @brief  This function handles Hard Fault exception.
-  * @param  None
-  * @retval None
-  */
 void HardFault_Handler(void)
 {
-  /* Go to infinite loop when Hard Fault exception occurs */
+  // Go to infinite loop when Hard Fault exception occurs
   while (1)
   {
   }
 }
 
-/**
-  * @brief  This function handles Memory Manage exception.
-  * @param  None
-  * @retval None
-  */
 void MemManage_Handler(void)
 {
-  /* Go to infinite loop when Memory Manage exception occurs */
+  // Go to infinite loop when Memory Manage exception occurs
   while (1)
   {
   }
 }
 
-/**
-  * @brief  This function handles Bus Fault exception.
-  * @param  None
-  * @retval None
-  */
 void BusFault_Handler(void)
 {
-  /* Go to infinite loop when Bus Fault exception occurs */
+  // Go to infinite loop when Bus Fault exception occurs
   while (1)
   {
   }
 }
 
-/**
-  * @brief  This function handles Usage Fault exception.
-  * @param  None
-  * @retval None
-  */
 void UsageFault_Handler(void)
 {
-  /* Go to infinite loop when Usage Fault exception occurs */
+  // Go to infinite loop when Usage Fault exception occurs
   while (1)
   {
   }
 }
 
-/**
-  * @brief  This function handles SVCall exception.
-  * @param  None
-  * @retval None
-  */
 void SVC_Handler(void)
 {
 }
 
-/**
-  * @brief  This function handles Debug Monitor exception.
-  * @param  None
-  * @retval None
-  */
 void DebugMon_Handler(void)
 {
 }
 
-/**
-  * @brief  This function handles PendSVC exception.
-  * @param  None
-  * @retval None
-  */
 void PendSV_Handler(void)
 {
 }
+
+void PPP_IRQHandler(void)
+{
+}
+
 
 // ----- SysTick_Handler() ----------------------------------------------------
 
@@ -140,10 +108,12 @@ SysTick_Handler (void) {
 
 // Прерывание датчика Холла - измерителя потока
 void EXTI9_5_IRQHandler(void){
+/*
 	if (EXTI_GetITStatus(FLOW_SENS_EXTI_LINE)) {
 		flowCount++;
 		EXTI_ClearITPendingBit(FLOW_SENS_EXTI_LINE);
 	}
+*/
 }
 
 /**
@@ -168,8 +138,41 @@ void EXTI15_10_IRQHandler(void){
 /*  file (startup_stm32f2xx.s).                                               */
 /******************************************************************************/
 void TIM4_IRQHandler( void ){
-	if(usDelFlag){
-		usDelFlag = FALSE;
+	while(1)
+	{}
+}
+
+void RTC_IRQHandler(void){
+	if( RTC->CRL & RTC_CRL_SECF ){
+		uxTime++;
+		sysRtc.SecFlag = SET;
+		RTC->CRL &= ~RTC_CRL_SECF;
+		// Секундный таймер
+		utime2Tm( &sysRtc, uxTime );
+			// Выставляем флаги минут, часов, дней, недель и месяцев
+		if( sysRtc.sec == 0 ){
+			sysRtc.MinFlag = SET;
+			if( sysRtc.min == 0){
+				sysRtc.HourFlag = SET;
+				if( sysRtc.hour == 0){
+					sysRtc.DayFlag = SET;
+					if( sysRtc.wday == 1){
+						sysRtc.WeekFlag = SET;
+					}
+					if( sysRtc.mday == 1){
+						sysRtc.MonthFlag = SET;
+					}
+				}
+			}
+		}
+	}
+	if( RTC->CRL & RTC_CRL_ALRF ){
+		RTC->CRL &= ~RTC_CRL_ALRF;
+	}
+	// Переполнение счетного регистра
+	if(RTC->CRL & RTC_CRL_OWF) {
+     RTC->CRL &= ~RTC_CRL_OWF;     //сбросить флаг (обязательно!!!)
+     //выполняем какие-то действия
 	}
 }
 
@@ -192,14 +195,5 @@ void CAN1_RX1_IRQHandler( void ){
 void CAN1_SCE_IRQHandler( void ){
 	canSceIrqHandler();
 }
-
-/**
-  * @brief  This function handles PPP interrupt request.
-  * @param  None
-  * @retval None
-  */
-/*void PPP_IRQHandler(void)
-{
-}*/
 
 /******************* (C) COPYRIGHT 2011 STMicroelectronics *****END OF FILE****/

@@ -10,10 +10,10 @@
 #include "my_time.h"
 #include "buffer.h"
 
-	uint32_t selfDevId;
+uint32_t selfDevId;
 
 void getIdList( tCanId *canid, uint32_t extId);
-// void sendToUart( CanTxMsg * tmp );
+void sendMqttToUart( CanTxMsg * tmp );
 
 void canInit(void)
 {
@@ -252,10 +252,11 @@ void canTxIrqHandler(void) {
 	{
 		CAN_ClearITPendingBit(CAN1, CAN_IT_TME);
 // TODO: Если есть сообщение для отправки - отправить его
-
+/*
 		if (  readBuff( &canTxBuf, (uint8_t *)&TxMessage) ) {
 			CAN_Transmit(CAN1, &TxMessage);
 		}
+*/
 	}
 }
 
@@ -274,7 +275,7 @@ void canProcess( void ){
 	CanRxMsg rxMessage;
 	CanTxMsg txMessage;
 
-/********* Для отправки по UART - не в CAN	
+// ********* Для отправки по UART - не в CAN
   // Select one empty transmit mailbox 
 	if (  readBuff( &canTxBuf, (uint8_t *)&txMessage) ) {
 		if( ((CAN1->TSR & CAN_TSR_TME0) == CAN_TSR_TME0) ||
@@ -283,9 +284,9 @@ void canProcess( void ){
 //Читаем предназначенные для отправки сообщения, если они есть, и запихиваем его в буфер отправки.
 			CAN_Transmit(CAN1, (CanTxMsg *)&txMessage);
 		}
-		sendToUart( &txMessage);
+		sendMqttToUart( &txMessage);
   }
-*/
+/*
   // Select one empty transmit mailbox 
 	if( ((CAN1->TSR & CAN_TSR_TME0) == CAN_TSR_TME0) ||
   		((CAN1->TSR & CAN_TSR_TME1) == CAN_TSR_TME1) ||
@@ -295,6 +296,7 @@ void canProcess( void ){
 			CAN_Transmit(CAN1, (CanTxMsg *)&txMessage);
 		}
   }
+*/
   if( readBuff( &canRxBuf, (uint8_t *)&rxMessage) ) {
   	tCanId canid;
   	getIdList( &canid, rxMessage.ExtId );
@@ -312,7 +314,19 @@ void canProcess( void ){
   			break;
   		case TIME:
   			uxTime = *((uint32_t *)&rxMessage.Data);
-  			xUtime2Tm( &sysDate, &sysTime, uxTime );
+  			// Allow access to BKP Domain
+  			PWR_BackupAccessCmd(ENABLE);
+  			// Wait until last write operation on RTC registers has finished
+  			RTC_WaitForLastTask();
+  			// Set initial value
+  			RTC_SetCounter( uxTime );
+  			// Wait until last write operation on RTC registers has finished
+  			RTC_WaitForLastTask();
+  			// Lock access to BKP Domain
+  			if( (RCC->BDCR & RCC_BDCR_RTCSEL ) != RCC_BDCR_RTCSEL ){
+  				//RTC тактируется не от HSE
+  				PWR_BackupAccessCmd(DISABLE);
+  			}
   			break;
   		case TO_OUT_MSG:
   			r103Mesure.toAdj = *((int16_t *)&rxMessage.Data);
