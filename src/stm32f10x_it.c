@@ -108,12 +108,12 @@ SysTick_Handler (void) {
 
 // Прерывание датчика Холла - измерителя потока
 void EXTI9_5_IRQHandler(void){
-/*
+
 	if (EXTI_GetITStatus(FLOW_SENS_EXTI_LINE)) {
 		flowCount++;
 		EXTI_ClearITPendingBit(FLOW_SENS_EXTI_LINE);
 	}
-*/
+
 }
 
 /**

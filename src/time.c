@@ -143,7 +143,6 @@ void rtcSetConfig( void ) {
   uxTime = tm2Utime( &sysRtc );
   utime2Tm( &sysRtc, uxTime );
 
-  secTimerInit();
   rtcInit( SRC_HSE128, uxTime );
 	RTC_ITConfig( RTC_IT_SEC, ENABLE);
 	NVIC_EnableIRQ( RTC_IRQn );
@@ -162,7 +161,7 @@ uint32_t sys_now( void ){
 }
 #define _TBIAS_DAYS		((70 * (uint32_t)365) + 17)
 #define _TBIAS_SECS		(_TBIAS_DAYS * (uint32_t)86400)
-#define	_TBIAS_YEAR		0
+#define	_TBIAS_YEAR		1900
 #define MONTAB(year)		((((year) & 03) || ((year) == 0)) ? mos : lmos)
 
 const int16_t	lmos[] = {0, 31, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335};
@@ -304,20 +303,6 @@ void timersProcess( void ) {
 				r103Stat.toStat = TO_STOP;
 		}
 	}
-}
-
-//Секундный таймер
-void secTimerInit( void ){
-	RCC->APB1ENR |= RCC_APB1ENR_TIM4EN;
-
-	TIM_DeInit(TIM4);
-	TIM4->CR1 &= ~TIM_CR1_CEN;
-	// Выставляем счетчик на 1 мс
-	TIM4->PSC = (RCC_Clocks.PCLK2_Frequency/1000) - 1;
-	TIM4->ARR = 1000 - 1;					// Таймер на 1 сек
-	TIM4->CR1 &= ~TIM_CR1_CKD;
-	TIM4->CR1 &= ~TIM_CR1_DIR;		// Считаем на возрастание
-
 }
 
 // Инициализация таймера микросекундных задержек
