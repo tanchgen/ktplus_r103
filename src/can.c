@@ -1,4 +1,4 @@
-/*
+	/*
  * can.c
  *
  *  Created on: 30 июля 2016 г.
@@ -165,7 +165,7 @@ void canFilterInit( void ){
 		filter.idMask = 0;
 	#else
 		// Пока без идентификатора конроллера задвижки
-		filter.idMask = CUR_ADJ_MASK | S207_MASK | COLD_HOT_MASK | MSG_ID_MASK /*| DEV_ID_MASK*/;
+		filter.idMask = CUR_ADJ_MASK | S207_MASK | MSG_ID_MASK /*| DEV_ID_MASK*/;
 	#endif
 
 		filter.ideList = 0;
@@ -276,13 +276,15 @@ void canProcess( void ){
 	CanTxMsg txMessage;
 
 // ********* Для отправки по UART - не в CAN
-  // Select one empty transmit mailbox 
-	if (  readBuff( &canTxBuf, (uint8_t *)&txMessage) ) {
+  // Select one empty transmit mailbox
+	if( canTxBuf.begin != canTxBuf.end ){
 		if( ((CAN1->TSR & CAN_TSR_TME0) == CAN_TSR_TME0) ||
   		((CAN1->TSR & CAN_TSR_TME1) == CAN_TSR_TME1) ||
 			((CAN1->TSR & CAN_TSR_TME2) == CAN_TSR_TME2) ){
+			if (  readBuff( &canTxBuf, (uint8_t *)&txMessage) ){
 //Читаем предназначенные для отправки сообщения, если они есть, и запихиваем его в буфер отправки.
-			CAN_Transmit(CAN1, (CanTxMsg *)&txMessage);
+				CAN_Transmit(CAN1, (CanTxMsg *)&txMessage);
+			}
 		}
 		sendMqttToUart( &txMessage);
   }
@@ -339,7 +341,7 @@ void canProcess( void ){
 
 }
 
-void canSendMsg( eMessId msgId, uint32_t data ) {
+void canSendMsg( eMsgId msgId, uint32_t data ) {
 	CanTxMsg canTxMsg;
 	tCanId canId;
 	// Формируем структуру canId
@@ -384,22 +386,20 @@ void canSendMsg( eMessId msgId, uint32_t data ) {
 
 uint32_t setIdList( tCanId *canid ){
  return 	( (((canid->adjCur)<<28) & CUR_ADJ_MASK)	|
-		 	 	 	 	(((canid->msgId)<<22) & MSG_ID_MASK)		|
-						(((canid->coldHot)<<21) & COLD_HOT_MASK)|
+		 	 	 	 	(((canid->msgId)<<21) & MSG_ID_MASK)		|
 						(((canid->s207)<<20) & S207_MASK)				|
 						((canid->devId) & DEV_ID_MASK) );
 }
 
 void getIdList( tCanId *canid, uint32_t extId){
 	canid->adjCur = (extId & CUR_ADJ_MASK) >> 28;
-	canid->msgId =  (extId & MSG_ID_MASK) >> 22;
-	canid->coldHot = (extId & COLD_HOT_MASK) >> 21;
+	canid->msgId =  (extId & MSG_ID_MASK) >> 21;
 	canid->s207 = (extId & S207_MASK) >> 20;
 	canid->devId = (extId & DEV_ID_MASK);
 }
 
 // Для тестов
-void canRecvSimMsg( eMessId msgId, uint32_t data ) {
+void canRecvSimMsg( eMsgId msgId, uint32_t data ) {
 	CanTxMsg canTxMsg;
 	tCanId canId;
 	// Формируем структуру canId

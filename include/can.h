@@ -40,8 +40,8 @@
 */
 
 #define CAN_RX_MESSAGE_LEN		sizeof(tCanMessage)
-#define CAN_RX_BUFFER_SIZE 		16
-#define CAN_TX_BUFFER_SIZE 		4
+#define CAN_RX_BUFFER_SIZE 		20
+#define CAN_TX_BUFFER_SIZE 		10
 #define CAN_TX_MESSAGE_LEN		sizeof(tCanMessage)
 
 typedef struct CanMessageStruct
@@ -56,8 +56,7 @@ typedef struct CanMessageStruct
 } tCanMessage;
 
 #define CUR_ADJ_MASK		(uint32_t)0x10000000
-#define MSG_ID_MASK			(uint32_t)0x0FC00000
-#define COLD_HOT_MASK		(uint32_t)0x00200000
+#define MSG_ID_MASK			(uint32_t)(0x7F << 21)		//(uint32_t)0x0FE00000
 #define S207_MASK				(uint32_t)0x00100000
 #define DEV_ID_MASK			(uint32_t)0x000FFFFF
 
@@ -83,6 +82,7 @@ typedef enum {				// Действующее-Задаваемое
 	ADJ
 } eCurAdj;
 
+
 typedef enum {							// Условный номер сообщения
 	NULL_MES = 0,
 	TO_IN_MSG = 1,						// Входящая температура
@@ -98,8 +98,34 @@ typedef enum {							// Условный номер сообщения
 	VALVE_ID,									// ID контоллера задвижки
 	IMP_TOTAL,								// Общее количество импульсов от 0 до 90 гр.
 	IMP_EXEC,									// Количество импульсов пройденное с последнего раза
-	TIME,											// Дата-Время
-	DEG0_FAULT = 0x21,				// Неисправность концевого датчика 0гр.
+
+	TIME = 0x0F,							// Дата-Время
+
+// Сообщения от электросчетчика
+	AWATT_NOW = 0x10,         // Действующее значение потребляемой мощности
+  AENRG_DAY = 0x11,         // Значение потребляемой мощности за сутки
+  AENRG_DAY_SUM = 0x12,     // Значение потребляемой мощности за сутки с нарастающим итогом
+  AENRG_MON = 0x13,         // Значение потребляемой мощности за месяц
+  AENRG_MON_SUM = 0x14,     // Значение потребляемой мощности за месяц с нарастающим итогом
+	AWATT_MON_MAX = 0x15,     // Пиковое значение потребляемой мощности за месяц
+	// Сообщения от S207
+	WGAIN_A = 0x16,           // Коэффициент коррекции мощности - Фаза A
+  WGAIN_B = 0x17,           // Коэффициент коррекции мощности - Фаза B
+  WGAIN_C = 0x18,           // Коэффициент коррекции мощности - Фаза C
+  WGAIN_N = 0x19,           // Коэффициент коррекции мощности - Фаза N
+  WOS_A = 0x1A,             // Коэффициент коррекции мощности - Фаза A
+  WOS_B = 0x1B,             // Коэффициент коррекции мощности - Фаза B
+  WOS_C = 0x1C,             // Коэффициент коррекции мощности - Фаза C
+  WOS_N = 0x1D,             // Коэффициент коррекции мощности - Фаза N
+	WATT_SEND_TOUT = 0x1E,    // Интервал отправки данных
+
+	// От S207 - задаются параметры, к S207 - превышены значения параметров
+	WATT_MAX  = 0x1F,         // Максимум потребляемой мощности
+	CUR_MAX = 0x20,           // Максимальный ток в цепи
+	VOLT_MAX = 0x21,          // Максимальное напряжение в цепи
+
+// Ошибки в системе
+	DEG0_FAULT = 0x31,				// Неисправность концевого датчика 0гр.
 	DEG90_FAULT,							// Неисправность концевого датчика 90гр.
 	VALVE_SENS_FAULT,					// Неисправность датчика положения задвижки
 	VALE_MOT_FAULT,						// Неисправность мотора задвижки
@@ -108,12 +134,7 @@ typedef enum {							// Условный номер сообщения
 	FLOW_SENS_FAULT,					// Неисправность датчика расходомера
 	DEV_FAULT,								// Нисправность контроллера
 
-} eMessId;
-
-typedef enum {				// Нагревательный/охладительный контур
-	COLD,
-	HOT,
-} eColdHot;
+} eMsgId;
 
 enum _eS207 {
 	nS207_DEV = 0,			// Поле признака НЕ-S207 - устройство
@@ -122,8 +143,7 @@ enum _eS207 {
 
 typedef struct {			// Структура CAN-сообщения
 	eCurAdj curAdj;
-	eMessId messId;
-	eColdHot coldHot;
+	eMsgId messId;
 	uint32_t devId;			// Идентификационный номер контроллера ( Serial ID MCU )
 } tIdStruct;
 
@@ -138,7 +158,7 @@ void canBspInit( void );
 void canFilterInit( void );
 void canFilterUpdate( tFilter * filter, uint8_t filterNum );
 
-void canSendMsg( eMessId msgId, uint32_t data );
+void canSendMsg( eMsgId msgId, uint32_t data );
 
 void canProcess( void );
 

@@ -50,7 +50,7 @@ const struct _param {
 						{"TIME", 4}
 };
 
-void canRecvSimMsg( eMessId msgId, uint32_t data );
+void canRecvSimMsg( eMsgId msgId, uint32_t data );
 uint8_t mqttTopCoder( uint8_t * top, CanTxMsg * can );
 uint8_t mqttMsgCoder( uint8_t * msg, CanTxMsg *can);
 
@@ -126,8 +126,6 @@ void USART1_IRQHandler()
 void usartProcess( void ){
 	uint8_t in[32];
 	time_t newTime;
-	uint8_t tmp[128];
-	uint8_t len;
 
 	if( rxFin ){
 		in[0] = 0;
@@ -197,7 +195,7 @@ uint8_t mqttTopCoder( uint8_t * top, CanTxMsg * can ){
 	*top++ = '/';
 	pos += 9;
 // COLD-HOT
-	msgId = (can->ExtId & MSG_ID_MASK) >> 22;
+	msgId = (can->ExtId & MSG_ID_MASK) >> 21;
 	memcpy( top, param[msgId].name, param[msgId].len );
 	pos += param[msgId].len;
 
@@ -207,19 +205,17 @@ uint8_t mqttTopCoder( uint8_t * top, CanTxMsg * can ){
 
 
 uint8_t mqttMsgCoder( uint8_t * msg, CanTxMsg *can) {
-	eMessId msgId;
+	eMsgId msgId;
 	uint8_t tmpMsg[80];
 	uint8_t * pTmp = tmpMsg;
-	uint32_t tmptm;
 	uint8_t * tmpdata;
 
-	tmptm = *((uint32_t*)can->Data);
 	// Дабавляем таймстамп
 	timeToStr( uxTime, tmpMsg);
 
 	sprintf((char *)msg, "{\"datetime\":\"%s\", \"payload\":\"", tmpMsg );
 
-	msgId = (can->ExtId & MSG_ID_MASK) >> 22;
+	msgId = (can->ExtId & MSG_ID_MASK) >> 21;
 
 	tmpdata = can->Data+4;
 	if( (msgId == TO_IN_MSG) || (msgId == TO_OUT_MSG) ) {

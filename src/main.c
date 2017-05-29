@@ -24,7 +24,7 @@ RCC_ClocksTypeDef RCC_Clocks;
 
 #define TO_INTERVAL  15000
 
-void thermoProcess( void );
+// void thermoProcess( void );
 void usartInit( void );
 void usartProcess( void );
 
@@ -35,7 +35,6 @@ int main(int argc, char* argv[]) {
 	(void)argv;
 	myTick = 0;
   uxTime = 1472731200;			// Unix Time = 01.09.2016г., четверг
-	uint8_t timeMsg[sizeof(CanTxMsg)];
 
   RCC_GetClocksFreq(&RCC_Clocks);
   // Use SysTick as reference for the delay loops.
@@ -45,6 +44,7 @@ int main(int argc, char* argv[]) {
 
   rtcSetConfig();
   canInit();
+  myDelay(selfDevId & 0xFF);
   delayUsInit();
   toInit();
   flowSensInit();

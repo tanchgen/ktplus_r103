@@ -25,6 +25,8 @@
 #include "stm32f10x_it.h"
 #include "my_time.h"
 #include "can.h"
+#include "flow.h"
+#include "onewire.h"
 
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
@@ -94,7 +96,6 @@ void PPP_IRQHandler(void)
 {
 }
 
-
 // ----- SysTick_Handler() ----------------------------------------------------
 
 void
@@ -108,12 +109,10 @@ SysTick_Handler (void) {
 
 // Прерывание датчика Холла - измерителя потока
 void EXTI9_5_IRQHandler(void){
-
 	if (EXTI_GetITStatus(FLOW_SENS_EXTI_LINE)) {
 		flowCount++;
 		EXTI_ClearITPendingBit(FLOW_SENS_EXTI_LINE);
 	}
-
 }
 
 /**
@@ -138,8 +137,10 @@ void EXTI15_10_IRQHandler(void){
 /*  file (startup_stm32f2xx.s).                                               */
 /******************************************************************************/
 void TIM4_IRQHandler( void ){
-	while(1)
-	{}
+	TIM4->SR &= ~TIM_SR_UIF;
+	if(usDelFlag){
+		usDelFlag = FALSE;
+	}
 }
 
 void RTC_IRQHandler(void){
@@ -182,9 +183,6 @@ void USB_LP_CAN1_RX0_IRQHandler(void)
 }
 
 void USB_HP_CAN1_TX_IRQHandler( void ){
-	canTxIrqHandler();
-}
-void CAN1_TX_IRQHandler( void ) {
 	canTxIrqHandler();
 }
 
